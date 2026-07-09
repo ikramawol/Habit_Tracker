@@ -487,8 +487,13 @@
 
   async function loadData(){
     try{
-      const res = await window.storage.get(STORE_KEY, false);
-      data = JSON.parse(res.value);
+      const raw = localStorage.getItem(STORE_KEY);
+      if(raw===null) throw new Error("no saved data yet");
+      data = JSON.parse(raw);
+      // backfill any fields added in later versions of the app
+      if(!data.alarms) data.alarms = [];
+      if(!data.checks) data.checks = {};
+      if(!data.habits) data.habits = [];
     }catch(e){
       data = defaultData();
       await persist();
@@ -499,8 +504,8 @@
   function persist(){
     clearTimeout(saveTimer);
     return new Promise(resolve=>{
-      saveTimer = setTimeout(async ()=>{
-        try{ await window.storage.set(STORE_KEY, JSON.stringify(data), false); }
+      saveTimer = setTimeout(()=>{
+        try{ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
         catch(e){ console.error("save failed", e); }
         resolve();
       }, 150);
