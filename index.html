@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0A0F1E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Habits">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Habit Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0F1E;
+    --surface:#141B30;
+    --surface-2:#1C2540;
+    --line:#262F4D;
+    --gold:#D9B25E;
+    --gold-soft:#3A331F;
+    --ember:#F0805A;
+    --mint:#4FD1A5;
+    --text:#F4F6FC;
+    --text-dim:#8A93B3;
+    --text-faint:#525C7E;
+    --radius:18px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1100px 500px at 50% -10%, #16204020, transparent),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding-bottom:96px;
+  }
+  h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  /* ---------- App shell ---------- */
+  .app{max-width:480px;margin:0 auto;padding:20px 18px 0;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(150deg,var(--gold),#8a6a2a);
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;
+  }
+  .brand-text .eyebrow{font-size:10px;letter-spacing:.14em;color:var(--text-faint);text-transform:uppercase;}
+  .brand-text .title{font-size:17px;font-weight:700;line-height:1.15;}
+  .icon-btn{
+    width:38px;height:38px;border-radius:12px;background:var(--surface);
+    border:1px solid var(--line);color:var(--text-dim);
+    display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;
+  }
+  .icon-btn:active{transform:scale(.94);}
+
+  /* ---------- Month / streak header ---------- */
+  .hero{
+    background:linear-gradient(155deg,var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:20px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:16px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero:before{
+    content:"";position:absolute;top:-40px;right:-40px;width:140px;height:140px;
+    background:radial-gradient(circle, #D9B25E22, transparent 70%);
+  }
+  .ring-wrap{position:relative;width:88px;height:88px;flex:none;}
+  .ring-wrap svg{transform:rotate(-90deg);}
+  .ring-pct{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    flex-direction:column;
+  }
+  .ring-pct .num{font-size:19px;font-weight:700;font-family:'Space Grotesk',sans-serif;}
+  .ring-pct .lbl{font-size:8.5px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-top:-2px;}
+  .hero-info{flex:1;min-width:0;}
+  .hero-date{font-size:13px;color:var(--text-dim);margin-bottom:2px;}
+  .hero-headline{font-size:16.5px;font-weight:600;line-height:1.3;margin-bottom:10px;}
+  .streak-row{display:flex;gap:14px;}
+  .streak-chip{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text-dim);}
+  .streak-chip b{color:var(--text);font-family:'JetBrains Mono',monospace;font-weight:600;}
+  .flame{color:var(--ember);}
+
+  /* ---------- Date strip ---------- */
+  .date-strip{
+    display:flex; gap:8px; overflow-x:auto; padding:2px 2px 14px;
+    scrollbar-width:none;
+  }
+  .date-strip::-webkit-scrollbar{display:none;}
+  .date-chip{
+    flex:none; width:50px; height:64px; border-radius:16px;
+    background:var(--surface); border:1px solid var(--line);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    cursor:pointer; color:var(--text-dim);
+  }
+  .date-chip .dow{font-size:10px; text-transform:uppercase; letter-spacing:.05em;}
+  .date-chip .dnum{font-size:16px; font-weight:700; font-family:'Space Grotesk',sans-serif; color:var(--text);}
+  .date-chip.today{border-color:var(--gold);}
+  .date-chip.selected{
+    background:linear-gradient(155deg,var(--gold),#a9812f); color:#241a05; border-color:transparent;
+  }
+  .date-chip.selected .dnum{color:#1a1204;}
+  .date-chip .dot{width:4px;height:4px;border-radius:50%;background:var(--mint);opacity:0;margin-top:1px;}
+  .date-chip.done .dot{opacity:1;}
+  .date-chip.selected .dot{background:#1a1204;}
+
+  /* ---------- Section label ---------- */
+  .section-label{
+    display:flex;align-items:center;justify-content:space-between;
+    margin:6px 2px 10px;
+  }
+  .section-label span{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);}
+  .section-label a{font-size:12px;color:var(--gold);text-decoration:none;font-weight:600;}
+
+  /* ---------- Habit list ---------- */
+  .habit-list{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+  .habit-row{
+    display:flex;align-items:center;gap:13px;
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:13px 14px;
+    transition:background .15s, border-color .15s;
+  }
+  .habit-row.checked{
+    background:linear-gradient(155deg,#182a20,#131c2c); border-color:#2c4a37;
+  }
+  .habit-check{
+    width:30px;height:30px;border-radius:10px;flex:none;
+    border:1.5px solid var(--line); background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px;cursor:pointer;color:transparent;
+  }
+  .habit-row.checked .habit-check{
+    background:linear-gradient(155deg,var(--mint),#2aa87e); border-color:transparent; color:#0b1a14;
+  }
+  .habit-emoji{font-size:19px;flex:none;width:24px;text-align:center;}
+  .habit-body{flex:1;min-width:0;}
+  .habit-name{font-size:14.5px;font-weight:600;}
+  .habit-row.checked .habit-name{color:var(--text-dim); text-decoration:line-through; text-decoration-color:var(--text-faint);}
+  .habit-sub{font-size:11.5px;color:var(--text-faint);margin-top:1px;}
+  .habit-del{
+    width:26px;height:26px;border-radius:8px;background:transparent;border:none;color:var(--text-faint);
+    font-size:15px;cursor:pointer;flex:none;opacity:.6;
+  }
+  .empty-state{
+    text-align:center;padding:34px 20px;color:var(--text-faint);font-size:13px;
+    border:1px dashed var(--line); border-radius:16px;
+  }
+
+  /* ---------- Add habit ---------- */
+  .add-row{
+    display:flex;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:26px;
+  }
+  .add-row input{
+    flex:1;background:transparent;border:none;color:var(--text);font-size:14px;padding:6px 8px;font-family:'Inter',sans-serif;
+  }
+  .add-row input:focus{outline:none;}
+  .add-row input::placeholder{color:var(--text-faint);}
+  .add-row button{
+    background:linear-gradient(155deg,var(--gold),#a9812f); border:none; color:#241a05;
+    font-weight:700; font-size:13px; border-radius:11px; padding:0 16px; cursor:pointer;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabbar{
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(10,15,30,.92); backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);
+    padding:10px 18px calc(10px + env(safe-area-inset-bottom));
+    display:flex; justify-content:center;
+  }
+  .tabbar-inner{display:flex;gap:6px;max-width:480px;width:100%;justify-content:space-between;}
+  .tab-btn{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:none;border:none;color:var(--text-faint); font-size:10.5px; font-weight:600;
+    padding:6px 4px; border-radius:12px; cursor:pointer; letter-spacing:.02em;
+  }
+  .tab-btn .ic{font-size:18px;}
+  .tab-btn.active{color:var(--gold);}
+
+  /* ---------- Grid view ---------- */
+  .grid-scroll{overflow-x:auto; border:1px solid var(--line); border-radius:16px; background:var(--surface); margin-bottom:20px;}
+  table.grid{border-collapse:collapse; width:max-content;}
+  table.grid th, table.grid td{
+    width:30px;height:30px;text-align:center;font-size:10px;color:var(--text-dim);
+    border-bottom:1px solid var(--line); border-right:1px solid var(--line);
+  }
+  table.grid th.habitcol, table.grid td.habitcol{
+    position:sticky;left:0;background:var(--surface);
+    width:120px;text-align:left;padding-left:10px;font-size:11.5px;font-weight:600;color:var(--text);
+    z-index:1;
+  }
+  table.grid thead th{background:var(--surface-2); font-weight:600; padding:6px 0;}
+  table.grid td.mark{cursor:pointer;}
+  table.grid td.mark span{
+    display:inline-flex;width:16px;height:16px;border-radius:5px;background:var(--surface-2);
+    align-items:center;justify-content:center;font-size:10px;
+  }
+  table.grid td.mark.on span{background:linear-gradient(155deg,var(--mint),#2aa87e);color:#0b1a14;}
+  table.grid td.weekend{background:#171f38;}
+
+  /* ---------- Stats ---------- */
+  .stat-cards{display:flex;gap:10px;margin-bottom:18px;}
+  .stat-card{
+    flex:1; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px;
+  }
+  .stat-card .val{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;}
+  .stat-card .lbl{font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
+  .bar-row .name{width:118px;font-size:12px;color:var(--text-dim);flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bar-track{flex:1;height:9px;border-radius:5px;background:var(--surface-2);overflow:hidden;}
+  .bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--gold),var(--ember));}
+  .bar-pct{width:34px;flex:none;text-align:right;font-size:11.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  ::-webkit-scrollbar{height:6px;width:6px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+
+  /* ---------- Date nav (month/year jump) ---------- */
+  .date-nav{
+    display:flex;align-items:center;gap:8px;
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:8px;margin-bottom:14px;
+  }
+  .date-nav .nav-btn{
+    width:34px;height:34px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);
+    color:var(--text-dim);font-size:16px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;flex:none;
+  }
+  .date-nav .nav-btn:active{transform:scale(.94);}
+  .date-nav select{
+    flex:1;background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13.5px;
+    border-radius:11px;padding:8px 6px;text-align:center;text-align-last:center;
+    cursor:pointer;-webkit-appearance:none;appearance:none;
+  }
+  .date-nav select:focus{outline:none;border-color:var(--gold);}
+  .date-nav .today-btn{
+    flex:none;background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);
+    font-size:11.5px;font-weight:700;border-radius:11px;padding:0 12px;height:34px;cursor:pointer;
+  }
+
+  /* ---------- Alarms ---------- */
+  .alarm-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+  .alarm-row{
+    display:flex;align-items:center;gap:13px;
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:13px 14px;
+  }
+  .alarm-row.off{opacity:.5;}
+  .alarm-time{font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:600;flex:none;min-width:82px;}
+  .alarm-body{flex:1;min-width:0;}
+  .alarm-label{font-size:13.5px;font-weight:600;}
+  .alarm-days{font-size:11px;color:var(--text-faint);margin-top:1px;}
+  .switch{
+    position:relative;flex:none;width:42px;height:25px;border-radius:14px;background:var(--surface-2);
+    border:1px solid var(--line);cursor:pointer;
+  }
+  .switch .knob{
+    position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:var(--text-dim);
+    transition:left .15s, background .15s;
+  }
+  .switch.on{background:var(--gold-soft);border-color:var(--gold);}
+  .switch.on .knob{left:19px;background:var(--gold);}
+  .alarm-del{
+    width:26px;height:26px;border-radius:8px;background:transparent;border:none;color:var(--text-faint);
+    font-size:15px;cursor:pointer;flex:none;opacity:.6;
+  }
+  .add-alarm-row{
+    display:flex;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+  .add-alarm-row input[type="time"]{
+    background:var(--surface-2);border:1px solid var(--line);color:var(--text);font-size:14px;
+    border-radius:11px;padding:8px;font-family:'JetBrains Mono',monospace;flex:none;width:110px;
+    color-scheme:dark;
+  }
+  .add-alarm-row input[type="text"]{
+    flex:1;min-width:100px;background:var(--surface-2);border:1px solid var(--line);color:var(--text);font-size:14px;
+    border-radius:11px;padding:8px 10px;font-family:'Inter',sans-serif;
+  }
+  .add-alarm-row input::placeholder{color:var(--text-faint);}
+  .add-alarm-row button{
+    background:linear-gradient(155deg,var(--gold),#a9812f); border:none; color:#241a05;
+    font-weight:700; font-size:13px; border-radius:11px; padding:0 16px; cursor:pointer;flex:none;
+  }
+  .day-toggles{display:flex;gap:5px;width:100%;justify-content:space-between;}
+  .day-toggle{
+    flex:1;text-align:center;font-size:10.5px;font-weight:700;color:var(--text-faint);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 0;cursor:pointer;
+  }
+  .day-toggle.on{background:linear-gradient(155deg,var(--gold),#a9812f);color:#241a05;border-color:transparent;}
+
+  /* ---------- Alarm ringing modal ---------- */
+  .alarm-overlay{
+    position:fixed;inset:0;background:rgba(5,8,18,.88);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;z-index:999;padding:20px;
+  }
+  .alarm-overlay.show{display:flex;}
+  .alarm-modal{
+    background:linear-gradient(155deg,var(--surface),var(--surface-2));border:1px solid var(--gold);
+    border-radius:24px;padding:32px 26px;text-align:center;max-width:340px;width:100%;
+    animation:pulseModal 1.1s ease-in-out infinite;
+  }
+  @keyframes pulseModal{0%,100%{box-shadow:0 0 0 0 #D9B25E33;}50%{box-shadow:0 0 0 14px #D9B25E00;}}
+  .alarm-modal .bell{font-size:44px;margin-bottom:10px;}
+  .alarm-modal .time{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700;margin-bottom:4px;}
+  .alarm-modal .label{font-size:15px;color:var(--text-dim);margin-bottom:24px;}
+  .alarm-modal .btn-row{display:flex;gap:10px;}
+  .alarm-modal button{
+    flex:1;border:none;border-radius:14px;padding:13px 0;font-size:14px;font-weight:700;cursor:pointer;
+  }
+  .alarm-modal .snooze-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text);}
+  .alarm-modal .dismiss-btn{background:linear-gradient(155deg,var(--gold),#a9812f);color:#241a05;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">🔥</div>
+      <div class="brand-text">
+        <div class="eyebrow">Daily discipline</div>
+        <div class="title">Habit Tracker</div>
+      </div>
+    </div>
+    <button class="icon-btn" id="alarmBellBtn">⏰</button>
+  </div>
+
+  <!-- DATE NAV: month / year jump -->
+  <div class="date-nav">
+    <button class="nav-btn" id="monthPrev">‹</button>
+    <select id="monthSelect"></select>
+    <select id="yearSelect"></select>
+    <button class="nav-btn" id="monthNext">›</button>
+    <button class="today-btn" id="jumpTodayBtn">Today</button>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="ring-wrap">
+      <svg width="88" height="88" viewBox="0 0 88 88">
+        <circle cx="44" cy="44" r="38" fill="none" stroke="#232C4A" stroke-width="8"/>
+        <circle id="ringFg" cx="44" cy="44" r="38" fill="none" stroke="url(#g1)" stroke-width="8" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76"/>
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#D9B25E"/>
+            <stop offset="100%" stop-color="#F0805A"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="ring-pct"><div class="num" id="ringNum">0%</div><div class="lbl">done</div></div>
+    </div>
+    <div class="hero-info">
+      <div class="hero-date" id="heroDate">—</div>
+      <div class="hero-headline" id="heroHeadline">Let's build the day.</div>
+      <div class="streak-row">
+        <div class="streak-chip"><span class="flame">🔥</span> <b id="statStreak">0</b>&nbsp;day streak</div>
+        <div class="streak-chip">✅ <b id="statDoneToday">0</b>/<span id="statTotalToday">0</span> today</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATE STRIP -->
+  <div class="date-strip" id="dateStrip"></div>
+
+  <!-- TODAY VIEW -->
+  <div class="view active" id="view-today">
+    <div class="section-label"><span id="listDateLabel">Today's habits</span></div>
+    <div class="habit-list" id="habitList"></div>
+    <div class="add-row">
+      <input id="newHabitEmoji" maxlength="2" placeholder="✨" style="max-width:38px;text-align:center;padding-left:4px;">
+      <input id="newHabitName" placeholder="Add a new habit…">
+      <button id="addHabitBtn">Add</button>
+    </div>
+  </div>
+
+  <!-- GRID VIEW -->
+  <div class="view" id="view-grid">
+    <div class="section-label"><span id="gridMonthLabel">This month</span></div>
+    <div class="grid-scroll"><table class="grid" id="gridTable"></table></div>
+  </div>
+
+  <!-- STATS VIEW -->
+  <div class="view" id="view-stats">
+    <div class="section-label"><span>This month at a glance</span></div>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="val" id="statMonthPct">0%</div><div class="lbl">Month completion</div></div>
+      <div class="stat-card"><div class="val" id="statBestStreak">0</div><div class="lbl">Best streak</div></div>
+    </div>
+    <div class="section-label"><span>Habit ranking</span></div>
+    <div id="rankingList"></div>
+  </div>
+
+  <!-- ALARMS VIEW -->
+  <div class="view" id="view-alarms">
+    <div class="section-label"><span>Built-in alarms</span></div>
+    <div class="alarm-list" id="alarmList"></div>
+    <div class="add-alarm-row">
+      <input type="time" id="newAlarmTime" value="07:00">
+      <input type="text" id="newAlarmLabel" placeholder="Alarm label…">
+      <button id="addAlarmBtn">Add</button>
+      <div class="day-toggles" id="newAlarmDays"></div>
+    </div>
+    <div class="section-label"><span style="font-size:11px;">Alarms ring while this tab is open in your browser.</span></div>
+  </div>
+
+</div>
+
+<!-- ALARM RINGING OVERLAY -->
+<div class="alarm-overlay" id="alarmOverlay">
+  <div class="alarm-modal">
+    <div class="bell">⏰</div>
+    <div class="time" id="ringingTime">07:00</div>
+    <div class="label" id="ringingLabel">Alarm</div>
+    <div class="btn-row">
+      <button class="snooze-btn" id="snoozeBtn">Snooze 5m</button>
+      <button class="dismiss-btn" id="dismissBtn">Dismiss</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <button class="tab-btn active" data-view="today"><span class="ic">✅</span>Today</button>
+    <button class="tab-btn" data-view="grid"><span class="ic">▦</span>Month grid</button>
+    <button class="tab-btn" data-view="stats"><span class="ic">📊</span>Stats</button>
+    <button class="tab-btn" data-view="alarms"><span class="ic">⏰</span>Alarms</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const DOW = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const STORE_KEY = "habit-tracker-data-v1";
+
+  const defaultData = () => ({
+    habits: [
+      {id: uid(), name:"Wake up at 05:00", emoji:"⏰"},
+      {id: uid(), name:"Gym", emoji:"💪"},
+      {id: uid(), name:"Reading / Learning", emoji:"📚"},
+      {id: uid(), name:"Day Planning", emoji:"🗓️"},
+      {id: uid(), name:"Project Work", emoji:"⚙️"},
+      {id: uid(), name:"No Alcohol", emoji:"🚫"},
+      {id: uid(), name:"Social Media Detox", emoji:"🌿"},
+      {id: uid(), name:"Goal Journaling", emoji:"📝"},
+      {id: uid(), name:"Cold Shower", emoji:"🚿"},
+      {id: uid(), name:"10k Steps", emoji:"🚶"},
+      {id: uid(), name:"Plan Tomorrow", emoji:"📄"}
+    ],
+    checks: {}, // "habitId|YYYY-MM-DD": true
+    alarms: [
+      {id: uid(), time:"05:00", label:"Wake up", days:[0,1,2,3,4,5,6], enabled:true}
+    ]
+  });
+
+  function uid(){ return Math.random().toString(36).slice(2,9); }
+  function pad(n){ return n<10 ? "0"+n : ""+n; }
+  function iso(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  function daysInMonth(y,m){ return new Date(y, m+1, 0).getDate(); }
+
+  let data = null;
+  let selectedDate = new Date();
+  let viewMonth = selectedDate.getMonth();
+  let viewYear = selectedDate.getFullYear();
+  let saveTimer = null;
+  let lastAlarmFireKey = null; // prevents re-firing within the same minute
+  let ringingAlarm = null;
+  let snoozeTimers = {};
+  let newAlarmDays = new Set([0,1,2,3,4,5,6]); // days selected for the alarm being composed
+  let audioCtx = null;
+
+  async function loadData(){
+    try{
+      const res = await window.storage.get(STORE_KEY, false);
+      data = JSON.parse(res.value);
+    }catch(e){
+      data = defaultData();
+      await persist();
+    }
+    render();
+  }
+
+  function persist(){
+    clearTimeout(saveTimer);
+    return new Promise(resolve=>{
+      saveTimer = setTimeout(async ()=>{
+        try{ await window.storage.set(STORE_KEY, JSON.stringify(data), false); }
+        catch(e){ console.error("save failed", e); }
+        resolve();
+      }, 150);
+    });
+  }
+
+  function isChecked(habitId, dISO){ return !!data.checks[habitId+"|"+dISO]; }
+  function setChecked(habitId, dISO, val){
+    const key = habitId+"|"+dISO;
+    if(val) data.checks[key] = true; else delete data.checks[key];
+  }
+
+  function habitStreak(habitId){
+    let streak = 0;
+    let cur = new Date();
+    // if today not checked, start counting from yesterday
+    if(!isChecked(habitId, iso(cur))) cur.setDate(cur.getDate()-1);
+    while(isChecked(habitId, iso(cur))){
+      streak++;
+      cur.setDate(cur.getDate()-1);
+    }
+    return streak;
+  }
+
+  function overallStreak(){
+    // days where ALL habits were checked, consecutive ending today or yesterday
+    if(data.habits.length===0) return 0;
+    let streak=0;
+    let cur = new Date();
+    function allDone(dISO){
+      return data.habits.every(h=>isChecked(h.id,dISO));
+    }
+    if(!allDone(iso(cur))) cur.setDate(cur.getDate()-1);
+    while(allDone(iso(cur))){
+      streak++;
+      cur.setDate(cur.getDate()-1);
+    }
+    return streak;
+  }
+
+  function bestStreakThisMonth(){
+    let best=0;
+    data.habits.forEach(h=>{
+      let run=0, max=0;
+      for(let d=1; d<=daysInMonth(viewYear,viewMonth); d++){
+        const dISO = viewYear+"-"+pad(viewMonth+1)+"-"+pad(d);
+        if(isChecked(h.id,dISO)){ run++; max=Math.max(max,run); } else run=0;
+      }
+      best = Math.max(best,max);
+    });
+    return best;
+  }
+
+  // ---------- Rendering ----------
+  function render(){
+    renderDateNav();
+    renderHero();
+    renderDateStrip();
+    renderHabitList();
+    renderGrid();
+    renderStats();
+    renderAlarms();
+  }
+
+  // ---------- Date nav (day / month / year pickers) ----------
+  function renderDateNav(){
+    const monthSel = document.getElementById('monthSelect');
+    const yearSel = document.getElementById('yearSelect');
+    if(monthSel.options.length===0){
+      monthSel.innerHTML = MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join("");
+    }
+    monthSel.value = viewMonth;
+    const curYear = new Date().getFullYear();
+    if(yearSel.options.length===0 || !yearSel.dataset.built){
+      let opts = "";
+      for(let y=curYear-6; y<=curYear+6; y++){ opts += `<option value="${y}">${y}</option>`; }
+      yearSel.innerHTML = opts;
+      yearSel.dataset.built = "1";
+    }
+    yearSel.value = viewYear;
+  }
+
+  function renderHero(){
+    const dISO = iso(selectedDate);
+    const total = data.habits.length;
+    const done = data.habits.filter(h=>isChecked(h.id,dISO)).length;
+    const pct = total? Math.round(done/total*100) : 0;
+    const circumference = 238.76;
+    document.getElementById('ringFg').style.strokeDashoffset = circumference - (circumference*pct/100);
+    document.getElementById('ringNum').textContent = pct+"%";
+    const isToday = iso(new Date())===dISO;
+    document.getElementById('heroDate').textContent = selectedDate.toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
+    document.getElementById('heroHeadline').textContent = pct===100 && total>0 ? "Perfect day. Every habit checked." : (isToday ? "Let's build the day." : "Looking back at this day.");
+    document.getElementById('statStreak').textContent = overallStreak();
+    document.getElementById('statDoneToday').textContent = done;
+    document.getElementById('statTotalToday').textContent = total;
+  }
+
+  function renderDateStrip(){
+    const strip = document.getElementById('dateStrip');
+    strip.innerHTML = "";
+    const n = daysInMonth(viewYear, viewMonth);
+    const todayISO = iso(new Date());
+    const selISO = iso(selectedDate);
+    for(let d=1; d<=n; d++){
+      const dt = new Date(viewYear, viewMonth, d);
+      const dISO = iso(dt);
+      const chip = document.createElement('div');
+      chip.className = "date-chip";
+      if(dISO===todayISO) chip.classList.add('today');
+      if(dISO===selISO) chip.classList.add('selected');
+      const total = data.habits.length;
+      const done = data.habits.filter(h=>isChecked(h.id,dISO)).length;
+      if(total>0 && done===total) chip.classList.add('done');
+      chip.innerHTML = `<div class="dow">${DOW[dt.getDay()]}</div><div class="dnum">${d}</div><div class="dot"></div>`;
+      chip.onclick = ()=>{ selectedDate = dt; render(); scrollSelectedIntoView(); };
+      strip.appendChild(chip);
+    }
+    requestAnimationFrame(scrollSelectedIntoView);
+  }
+  function scrollSelectedIntoView(){
+    const strip = document.getElementById('dateStrip');
+    const sel = strip.querySelector('.date-chip.selected');
+    if(sel) sel.scrollIntoView({inline:'center', block:'nearest'});
+  }
+
+  function renderHabitList(){
+    const list = document.getElementById('habitList');
+    const dISO = iso(selectedDate);
+    document.getElementById('listDateLabel').textContent =
+      (iso(new Date())===dISO ? "Today · " : "") + selectedDate.toLocaleDateString(undefined,{month:'short', day:'numeric'});
+    list.innerHTML = "";
+    if(data.habits.length===0){
+      list.innerHTML = `<div class="empty-state">No habits yet. Add your first one below 👇</div>`;
+      return;
+    }
+    data.habits.forEach(h=>{
+      const checked = isChecked(h.id, dISO);
+      const streak = habitStreak(h.id);
+      const row = document.createElement('div');
+      row.className = "habit-row" + (checked ? " checked" : "");
+      row.innerHTML = `
+        <div class="habit-check">${checked ? "✓" : ""}</div>
+        <div class="habit-emoji">${h.emoji||"•"}</div>
+        <div class="habit-body">
+          <div class="habit-name">${escapeHtml(h.name)}</div>
+          <div class="habit-sub">${streak>0 ? "🔥 "+streak+" day streak" : "No streak yet"}</div>
+        </div>
+        <button class="habit-del" title="Delete">✕</button>
+      `;
+      row.querySelector('.habit-check').onclick = async ()=>{
+        setChecked(h.id, dISO, !checked);
+        await persist();
+        render();
+      };
+      row.querySelector('.habit-body').onclick = row.querySelector('.habit-check').onclick;
+      row.querySelector('.habit-del').onclick = async (e)=>{
+        e.stopPropagation();
+        if(confirm(`Remove "${h.name}" from your habits?`)){
+          data.habits = data.habits.filter(x=>x.id!==h.id);
+          await persist();
+          render();
+        }
+      };
+      list.appendChild(row);
+    });
+  }
+
+  function renderGrid(){
+    const table = document.getElementById('gridTable');
+    document.getElementById('gridMonthLabel').textContent = MONTHS[viewMonth] + " " + viewYear;
+    const n = daysInMonth(viewYear, viewMonth);
+    let thead = "<thead><tr><th class='habitcol'>Habit</th>";
+    for(let d=1; d<=n; d++){
+      const dow = new Date(viewYear, viewMonth, d).getDay();
+      thead += `<th class="${(dow===0||dow===6)?'weekend':''}">${d}</th>`;
+    }
+    thead += "</tr></thead>";
+    let tbody = "<tbody>";
+    data.habits.forEach(h=>{
+      tbody += `<tr><td class="habitcol">${h.emoji} ${escapeHtml(h.name)}</td>`;
+      for(let d=1; d<=n; d++){
+        const dISO = viewYear+"-"+pad(viewMonth+1)+"-"+pad(d);
+        const dow = new Date(viewYear, viewMonth, d).getDay();
+        const on = isChecked(h.id, dISO);
+        tbody += `<td class="mark ${on?'on':''} ${(dow===0||dow===6)?'weekend':''}" data-h="${h.id}" data-d="${dISO}"><span>${on?'✓':''}</span></td>`;
+      }
+      tbody += "</tr>";
+    });
+    tbody += "</tbody>";
+    table.innerHTML = thead + tbody;
+    table.querySelectorAll('td.mark').forEach(td=>{
+      td.onclick = async ()=>{
+        const hId = td.dataset.h, dISO = td.dataset.d;
+        setChecked(hId, dISO, !isChecked(hId, dISO));
+        await persist();
+        render();
+      };
+    });
+  }
+
+  function renderStats(){
+    const n = daysInMonth(viewYear, viewMonth);
+    let totalPossible = data.habits.length * n;
+    let totalDone = 0;
+    const perHabit = data.habits.map(h=>{
+      let done=0;
+      for(let d=1; d<=n; d++){
+        const dISO = viewYear+"-"+pad(viewMonth+1)+"-"+pad(d);
+        if(isChecked(h.id,dISO)) done++;
+      }
+      totalDone += done;
+      return {h, done, pct: n? Math.round(done/n*100):0};
+    }).sort((a,b)=>b.pct-a.pct);
+
+    document.getElementById('statMonthPct').textContent = totalPossible? Math.round(totalDone/totalPossible*100)+"%" : "0%";
+    document.getElementById('statBestStreak').textContent = bestStreakThisMonth();
+
+    const rankEl = document.getElementById('rankingList');
+    rankEl.innerHTML = "";
+    if(perHabit.length===0){
+      rankEl.innerHTML = `<div class="empty-state">Add habits to see rankings.</div>`;
+      return;
+    }
+    perHabit.forEach(item=>{
+      const row = document.createElement('div');
+      row.className = "bar-row";
+      row.innerHTML = `
+        <div class="name">${item.h.emoji} ${escapeHtml(item.h.name)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${item.pct}%"></div></div>
+        <div class="bar-pct">${item.pct}%</div>
+      `;
+      rankEl.appendChild(row);
+    });
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- Tabs ----------
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.onclick = ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('view-'+btn.dataset.view).classList.add('active');
+    };
+  });
+
+  // ---------- Add habit ----------
+  document.getElementById('addHabitBtn').onclick = async ()=>{
+    const nameInput = document.getElementById('newHabitName');
+    const emojiInput = document.getElementById('newHabitEmoji');
+    const name = nameInput.value.trim();
+    if(!name) return;
+    data.habits.push({id: uid(), name, emoji: emojiInput.value.trim() || "✨"});
+    nameInput.value = ""; emojiInput.value = "";
+    await persist();
+    render();
+  };
+  document.getElementById('newHabitName').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('addHabitBtn').click();
+  });
+
+  // ---------- Month nav ----------
+  document.getElementById('monthPrev').onclick = ()=>{
+    viewMonth--;
+    if(viewMonth<0){ viewMonth=11; viewYear--; }
+    selectedDate = new Date(viewYear, viewMonth, Math.min(selectedDate.getDate(), daysInMonth(viewYear,viewMonth)));
+    render();
+  };
+  document.getElementById('monthNext').onclick = ()=>{
+    viewMonth++;
+    if(viewMonth>11){ viewMonth=0; viewYear++; }
+    selectedDate = new Date(viewYear, viewMonth, Math.min(selectedDate.getDate(), daysInMonth(viewYear,viewMonth)));
+    render();
+  };
+  document.getElementById('monthSelect').onchange = (e)=>{
+    viewMonth = parseInt(e.target.value, 10);
+    selectedDate = new Date(viewYear, viewMonth, Math.min(selectedDate.getDate(), daysInMonth(viewYear,viewMonth)));
+    render();
+  };
+  document.getElementById('yearSelect').onchange = (e)=>{
+    viewYear = parseInt(e.target.value, 10);
+    selectedDate = new Date(viewYear, viewMonth, Math.min(selectedDate.getDate(), daysInMonth(viewYear,viewMonth)));
+    render();
+  };
+  document.getElementById('jumpTodayBtn').onclick = ()=>{
+    const now = new Date();
+    viewMonth = now.getMonth(); viewYear = now.getFullYear();
+    selectedDate = now;
+    render();
+  };
+  document.getElementById('alarmBellBtn').onclick = ()=>{
+    document.querySelector('.tab-btn[data-view="alarms"]').click();
+  };
+
+  // ---------- Alarms ----------
+  const DAY_LETTERS = ["S","M","T","W","T","F","S"];
+
+  function renderNewAlarmDayToggles(){
+    const wrap = document.getElementById('newAlarmDays');
+    wrap.innerHTML = "";
+    DAY_LETTERS.forEach((letter, i)=>{
+      const el = document.createElement('div');
+      el.className = "day-toggle" + (newAlarmDays.has(i) ? " on" : "");
+      el.textContent = letter;
+      el.onclick = ()=>{
+        if(newAlarmDays.has(i)) newAlarmDays.delete(i); else newAlarmDays.add(i);
+        renderNewAlarmDayToggles();
+      };
+      wrap.appendChild(el);
+    });
+  }
+  renderNewAlarmDayToggles();
+
+  function daysLabel(days){
+    if(days.length===7) return "Every day";
+    if(days.length===0) return "No days set";
+    const weekdays=[1,2,3,4,5], weekend=[0,6];
+    const sorted=[...days].sort();
+    if(sorted.length===5 && weekdays.every(d=>days.includes(d))) return "Weekdays";
+    if(sorted.length===2 && weekend.every(d=>days.includes(d))) return "Weekends";
+    return sorted.map(d=>DAY_LETTERS[d]).join(" ");
+  }
+
+  function renderAlarms(){
+    const list = document.getElementById('alarmList');
+    list.innerHTML = "";
+    if(!data.alarms || data.alarms.length===0){
+      list.innerHTML = `<div class="empty-state">No alarms yet. Add one below 👇</div>`;
+      return;
+    }
+    data.alarms.forEach(a=>{
+      const row = document.createElement('div');
+      row.className = "alarm-row" + (a.enabled ? "" : " off");
+      row.innerHTML = `
+        <div class="alarm-time">${a.time}</div>
+        <div class="alarm-body">
+          <div class="alarm-label">${escapeHtml(a.label || "Alarm")}</div>
+          <div class="alarm-days">${daysLabel(a.days||[])}</div>
+        </div>
+        <div class="switch ${a.enabled?'on':''}"><div class="knob"></div></div>
+        <button class="alarm-del" title="Delete">✕</button>
+      `;
+      row.querySelector('.switch').onclick = async ()=>{
+        a.enabled = !a.enabled;
+        await persist();
+        render();
+      };
+      row.querySelector('.alarm-del').onclick = async ()=>{
+        if(confirm(`Remove "${a.label||'this alarm'}"?`)){
+          data.alarms = data.alarms.filter(x=>x.id!==a.id);
+          await persist();
+          render();
+        }
+      };
+      list.appendChild(row);
+    });
+  }
+
+  document.getElementById('addAlarmBtn').onclick = async ()=>{
+    const timeInput = document.getElementById('newAlarmTime');
+    const labelInput = document.getElementById('newAlarmLabel');
+    if(!timeInput.value) return;
+    if(!data.alarms) data.alarms = [];
+    data.alarms.push({
+      id: uid(),
+      time: timeInput.value,
+      label: labelInput.value.trim() || "Alarm",
+      days: Array.from(newAlarmDays),
+      enabled: true
+    });
+    labelInput.value = "";
+    await persist();
+    render();
+    if(window.Notification && Notification.permission==="default"){
+      Notification.requestPermission();
+    }
+  };
+
+  // ---------- Alarm engine: checks the clock and rings ----------
+  function beep(){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      for(let i=0;i<6;i++){
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = i%2===0 ? 880 : 660;
+        const t0 = now + i*0.42;
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(0.28, t0+0.02);
+        gain.gain.linearRampToValueAtTime(0, t0+0.34);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(t0); osc.stop(t0+0.36);
+      }
+    }catch(e){ console.error("beep failed", e); }
+  }
+
+  function triggerAlarm(alarm){
+    ringingAlarm = alarm;
+    document.getElementById('ringingTime').textContent = alarm.time;
+    document.getElementById('ringingLabel').textContent = alarm.label || "Alarm";
+    document.getElementById('alarmOverlay').classList.add('show');
+    beep();
+    if(window.Notification && Notification.permission==="granted"){
+      try{ new Notification(alarm.label||"Alarm", {body:"Time: "+alarm.time, tag:"habit-alarm"}); }catch(e){}
+    }
+  }
+
+  document.getElementById('dismissBtn').onclick = ()=>{
+    document.getElementById('alarmOverlay').classList.remove('show');
+    ringingAlarm = null;
+  };
+  document.getElementById('snoozeBtn').onclick = ()=>{
+    const a = ringingAlarm;
+    document.getElementById('alarmOverlay').classList.remove('show');
+    ringingAlarm = null;
+    if(a){
+      clearTimeout(snoozeTimers[a.id]);
+      snoozeTimers[a.id] = setTimeout(()=>{ triggerAlarm(a); }, 5*60*1000);
+    }
+  };
+
+  function checkAlarms(){
+    if(!data || !data.alarms || document.getElementById('alarmOverlay').classList.contains('show')) return;
+    const now = new Date();
+    const hh = pad(now.getHours()), mm = pad(now.getMinutes());
+    const nowHM = hh+":"+mm;
+    const dow = now.getDay();
+    const fireKey = nowHM; // only one alarm can ring at once; re-check every tick
+    data.alarms.forEach(a=>{
+      if(!a.enabled) return;
+      if(a.time!==nowHM) return;
+      if(a.days && a.days.length && !a.days.includes(dow)) return;
+      const key = a.id+"|"+nowHM+"|"+iso(now);
+      if(lastAlarmFireKey===key) return;
+      lastAlarmFireKey = key;
+      triggerAlarm(a);
+    });
+  }
+  setInterval(checkAlarms, 5000);
+
+  loadData();
+
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", ()=>{
+      navigator.serviceWorker.register("sw.js").catch(e=>console.warn("SW registration failed", e));
+    });
+  }
+})();
+</script>
+</body>
+</html>
