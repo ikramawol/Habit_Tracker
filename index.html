@@ -153,10 +153,39 @@
     width:26px;height:26px;border-radius:8px;background:transparent;border:none;color:var(--text-faint);
     font-size:15px;cursor:pointer;flex:none;opacity:.6;
   }
+  .habit-edit{
+    width:26px;height:26px;border-radius:8px;background:transparent;border:none;color:var(--text-faint);
+    font-size:14px;cursor:pointer;flex:none;opacity:.6;
+  }
   .empty-state{
     text-align:center;padding:34px 20px;color:var(--text-faint);font-size:13px;
     border:1px dashed var(--line); border-radius:16px;
   }
+
+  /* ---------- Edit habit modal ---------- */
+  .edit-overlay{
+    position:fixed;inset:0;background:rgba(5,8,18,.82);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;z-index:998;padding:20px;
+  }
+  .edit-overlay.show{display:flex;}
+  .edit-modal{
+    background:var(--surface);border:1px solid var(--line);border-radius:22px;
+    padding:22px;max-width:340px;width:100%;
+  }
+  .edit-modal h3{font-size:15px;font-weight:700;margin-bottom:16px;}
+  .edit-modal .edit-fields{display:flex;gap:8px;margin-bottom:18px;}
+  .edit-modal input[type="text"]{
+    background:var(--surface-2);border:1px solid var(--line);color:var(--text);font-size:14px;
+    border-radius:11px;padding:10px;font-family:'Inter',sans-serif;
+  }
+  .edit-modal .edit-emoji{width:56px;text-align:center;font-size:18px;}
+  .edit-modal .edit-name{flex:1;min-width:0;}
+  .edit-modal .btn-row{display:flex;gap:10px;}
+  .edit-modal button{
+    flex:1;border:none;border-radius:14px;padding:12px 0;font-size:14px;font-weight:700;cursor:pointer;
+  }
+  .edit-modal .cancel-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text);}
+  .edit-modal .save-btn{background:linear-gradient(155deg,var(--gold),#a9812f);color:#241a05;}
 
   /* ---------- Add habit ---------- */
   .add-row{
@@ -421,6 +450,21 @@
 
 </div>
 
+<!-- EDIT HABIT OVERLAY -->
+<div class="edit-overlay" id="editOverlay">
+  <div class="edit-modal">
+    <h3>Edit habit</h3>
+    <div class="edit-fields">
+      <input type="text" class="edit-emoji" id="editEmojiInput" maxlength="4">
+      <input type="text" class="edit-name" id="editNameInput" placeholder="Habit name" maxlength="60">
+    </div>
+    <div class="btn-row">
+      <button class="cancel-btn" id="editCancelBtn">Cancel</button>
+      <button class="save-btn" id="editSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- ALARM RINGING OVERLAY -->
 <div class="alarm-overlay" id="alarmOverlay">
   <div class="alarm-modal">
@@ -654,6 +698,7 @@
           <div class="habit-name">${escapeHtml(h.name)}</div>
           <div class="habit-sub">${streak>0 ? "🔥 "+streak+" day streak" : "No streak yet"}</div>
         </div>
+        <button class="habit-edit" title="Edit">✎</button>
         <button class="habit-del" title="Delete">✕</button>
       `;
       row.querySelector('.habit-check').onclick = async ()=>{
@@ -662,6 +707,10 @@
         render();
       };
       row.querySelector('.habit-body').onclick = row.querySelector('.habit-check').onclick;
+      row.querySelector('.habit-edit').onclick = (e)=>{
+        e.stopPropagation();
+        openEditHabit(h);
+      };
       row.querySelector('.habit-del').onclick = async (e)=>{
         e.stopPropagation();
         if(confirm(`Remove "${h.name}" from your habits?`)){
@@ -770,6 +819,34 @@
   document.getElementById('newHabitName').addEventListener('keydown', e=>{
     if(e.key==='Enter') document.getElementById('addHabitBtn').click();
   });
+
+  // ---------- Edit habit ----------
+  let editingHabitId = null;
+  function openEditHabit(h){
+    editingHabitId = h.id;
+    document.getElementById('editEmojiInput').value = h.emoji || "✨";
+    document.getElementById('editNameInput').value = h.name || "";
+    document.getElementById('editOverlay').classList.add('show');
+  }
+  function closeEditHabit(){
+    editingHabitId = null;
+    document.getElementById('editOverlay').classList.remove('show');
+  }
+  document.getElementById('editCancelBtn').onclick = closeEditHabit;
+  document.getElementById('editOverlay').onclick = (e)=>{
+    if(e.target.id==='editOverlay') closeEditHabit();
+  };
+  document.getElementById('editSaveBtn').onclick = async ()=>{
+    if(!editingHabitId) return;
+    const name = document.getElementById('editNameInput').value.trim();
+    const emoji = document.getElementById('editEmojiInput').value.trim() || "✨";
+    if(!name){ document.getElementById('editNameInput').focus(); return; }
+    const h = data.habits.find(x=>x.id===editingHabitId);
+    if(h){ h.name = name; h.emoji = emoji; }
+    closeEditHabit();
+    await persist();
+    render();
+  };
 
   // ---------- Month nav ----------
   document.getElementById('monthPrev').onclick = ()=>{
