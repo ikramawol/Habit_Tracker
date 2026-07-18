@@ -124,7 +124,37 @@
   .section-label span{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);}
   .section-label a{font-size:12px;color:var(--gold);text-decoration:none;font-weight:600;}
 
-  /* ---------- Habit list ---------- */
+  /* ---------- Daily plan & goal ---------- */
+  .plan-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:12px 14px 14px;margin-bottom:18px;
+  }
+  .plan-card input[type="text"]{
+    width:100%;background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+    font-size:13.5px;font-weight:600;border-radius:11px;padding:10px 12px;margin-bottom:8px;
+    font-family:'Inter',sans-serif;
+  }
+  .plan-card textarea{
+    width:100%;background:var(--surface-2);border:1px solid var(--line);color:var(--text-dim);
+    font-size:13px;border-radius:11px;padding:10px 12px;font-family:'Inter',sans-serif;resize:vertical;
+    min-height:60px;
+  }
+  .plan-card input::placeholder, .plan-card textarea::placeholder{color:var(--text-faint);}
+  .plan-card input:focus, .plan-card textarea:focus{outline:none;border-color:var(--gold);}
+
+  /* ---------- Habit row: drag handle & rest day ---------- */
+  .drag-handle{
+    flex:none;width:18px;text-align:center;color:var(--text-faint);font-size:16px;
+    cursor:grab;touch-action:none;user-select:none;line-height:1;
+  }
+  .habit-row.dragging{opacity:.55;box-shadow:0 10px 24px rgba(0,0,0,.45);}
+  .habit-row.rest{opacity:.55;}
+  .habit-row.rest .habit-check{cursor:default;}
+  .habit-days-mini{font-size:10.5px;color:var(--text-faint);}
+
+  /* ---------- Add habit row (day toggles) ---------- */
+  .add-row{flex-wrap:wrap;}
+  .add-row .day-toggles{width:100%;order:3;margin-top:4px;}
   .habit-list{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
   .habit-row{
     display:flex;align-items:center;gap:13px;
@@ -219,25 +249,32 @@
   .tab-btn.active{color:var(--gold);}
 
   /* ---------- Grid view ---------- */
-  .grid-scroll{overflow-x:auto; border:1px solid var(--line); border-radius:16px; background:var(--surface); margin-bottom:20px;}
+  .grid-scroll{overflow-x:auto; overflow-y:auto; max-height:70vh; border:1px solid var(--line); border-radius:16px; background:var(--surface); margin-bottom:20px;}
   table.grid{border-collapse:collapse; width:max-content;}
   table.grid th, table.grid td{
-    width:30px;height:30px;text-align:center;font-size:10px;color:var(--text-dim);
+    width:34px;height:34px;text-align:center;font-size:10px;color:var(--text-dim);
     border-bottom:1px solid var(--line); border-right:1px solid var(--line);
   }
   table.grid th.habitcol, table.grid td.habitcol{
     position:sticky;left:0;background:var(--surface);
-    width:120px;text-align:left;padding-left:10px;font-size:11.5px;font-weight:600;color:var(--text);
-    z-index:1;
+    width:130px;text-align:left;padding-left:10px;font-size:11.5px;font-weight:600;color:var(--text);
+    z-index:2;
   }
-  table.grid thead th{background:var(--surface-2); font-weight:600; padding:6px 0;}
+  table.grid thead th{background:var(--surface-2); font-weight:600; padding:4px 0;}
+  table.grid thead{position:sticky; top:0; z-index:3;}
+  table.grid thead th.habitcol{z-index:4;}
+  table.grid thead tr.dow-row th{font-size:9px;color:var(--text-faint);font-weight:600;padding-top:2px;padding-bottom:5px;}
+  table.grid th.today-col, table.grid td.today-col{background:#2a2210;}
+  table.grid thead th.today-col{background:#3a331f;color:var(--gold);}
   table.grid td.mark{cursor:pointer;}
   table.grid td.mark span{
-    display:inline-flex;width:16px;height:16px;border-radius:5px;background:var(--surface-2);
-    align-items:center;justify-content:center;font-size:10px;
+    display:inline-flex;width:20px;height:20px;border-radius:6px;background:var(--surface-2);
+    align-items:center;justify-content:center;font-size:11px;
   }
-  table.grid td.mark.on span{background:linear-gradient(155deg,var(--mint),#2aa87e);color:#0b1a14;}
+  table.grid td.mark.on span{background:linear-gradient(155deg,var(--mint),#2aa87e);color:#0b1a14;font-weight:700;}
   table.grid td.weekend{background:#171f38;}
+  table.grid td.off{cursor:default;color:var(--text-faint);}
+  table.grid td.off span{opacity:.25;}
 
   /* ---------- Stats ---------- */
   .stat-cards{display:flex;gap:10px;margin-bottom:18px;}
@@ -409,12 +446,18 @@
 
   <!-- TODAY VIEW -->
   <div class="view active" id="view-today">
+    <div class="plan-card">
+      <div class="section-label"><span>Daily plan &amp; goal</span></div>
+      <input type="text" id="dailyGoalInput" placeholder="Today's #1 goal…">
+      <textarea id="dailyPlanInput" rows="3" placeholder="Plan for the day…"></textarea>
+    </div>
     <div class="section-label"><span id="listDateLabel">Today's habits</span></div>
     <div class="habit-list" id="habitList"></div>
     <div class="add-row">
       <input id="newHabitEmoji" maxlength="2" placeholder="✨" style="max-width:38px;text-align:center;padding-left:4px;">
       <input id="newHabitName" placeholder="Add a new habit…">
       <button id="addHabitBtn">Add</button>
+      <div class="day-toggles" id="newHabitDaysToggle"></div>
     </div>
   </div>
 
@@ -458,6 +501,8 @@
       <input type="text" class="edit-emoji" id="editEmojiInput" maxlength="4">
       <input type="text" class="edit-name" id="editNameInput" placeholder="Habit name" maxlength="60">
     </div>
+    <div class="section-label" style="margin-top:-8px;"><span style="font-size:10px;">Scheduled days</span></div>
+    <div class="day-toggles" id="editHabitDaysToggle" style="margin-bottom:18px;"></div>
     <div class="btn-row">
       <button class="cancel-btn" id="editCancelBtn">Cancel</button>
       <button class="save-btn" id="editSaveBtn">Save</button>
@@ -490,24 +535,26 @@
 <script>
 (function(){
   const DOW = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+  const DOW_LETTERS = ["S","M","T","W","T","F","S"];
   const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const STORE_KEY = "habit-tracker-data-v1";
 
   const defaultData = () => ({
     habits: [
-      {id: uid(), name:"Wake up at 05:00", emoji:"⏰"},
-      {id: uid(), name:"Gym", emoji:"💪"},
-      {id: uid(), name:"Reading / Learning", emoji:"📚"},
-      {id: uid(), name:"Day Planning", emoji:"🗓️"},
-      {id: uid(), name:"Project Work", emoji:"⚙️"},
-      {id: uid(), name:"No Alcohol", emoji:"🚫"},
-      {id: uid(), name:"Social Media Detox", emoji:"🌿"},
-      {id: uid(), name:"Goal Journaling", emoji:"📝"},
-      {id: uid(), name:"Cold Shower", emoji:"🚿"},
-      {id: uid(), name:"10k Steps", emoji:"🚶"},
-      {id: uid(), name:"Plan Tomorrow", emoji:"📄"}
+      {id: uid(), name:"Wake up at 05:00", emoji:"⏰", days:[0,1,2,3,4,5,6]},
+      {id: uid(), name:"Gym", emoji:"💪", days:[1,3,5]},
+      {id: uid(), name:"Reading / Learning", emoji:"📚", days:[0,1,2,3,4,5,6]},
+      {id: uid(), name:"Day Planning", emoji:"🗓️", days:[0,1,2,3,4,5,6]},
+      {id: uid(), name:"Project Work", emoji:"⚙️", days:[1,2,3,4,5]},
+      {id: uid(), name:"No Alcohol", emoji:"🚫", days:[0,1,2,3,4,5,6]},
+      {id: uid(), name:"Social Media Detox", emoji:"🌿", days:[0,1,2,3,4,5,6]},
+      {id: uid(), name:"Goal Journaling", emoji:"📝", days:[0,1,2,3,4,5,6]},
+      {id: uid(), name:"Cold Shower", emoji:"🚿", days:[0,1,2,3,4,5,6]},
+      {id: uid(), name:"10k Steps", emoji:"🚶", days:[0,1,2,3,4,5,6]},
+      {id: uid(), name:"Plan Tomorrow", emoji:"📄", days:[0,1,2,3,4,5,6]}
     ],
     checks: {}, // "habitId|YYYY-MM-DD": true
+    notes: {}, // "YYYY-MM-DD": {goal, plan}
     alarms: [
       {id: uid(), time:"05:00", label:"Wake up", days:[0,1,2,3,4,5,6], enabled:true}
     ]
@@ -527,6 +574,8 @@
   let ringingAlarm = null;
   let snoozeTimers = {};
   let newAlarmDays = new Set([0,1,2,3,4,5,6]); // days selected for the alarm being composed
+  let newHabitDays = new Set([0,1,2,3,4,5,6]); // days selected for the habit being composed
+  let editHabitDays = new Set([0,1,2,3,4,5,6]); // days selected while editing a habit
   let audioCtx = null;
 
   async function loadData(){
@@ -538,6 +587,8 @@
       if(!data.alarms) data.alarms = [];
       if(!data.checks) data.checks = {};
       if(!data.habits) data.habits = [];
+      if(!data.notes) data.notes = {};
+      data.habits.forEach(h=>{ if(!h.days || !h.days.length) h.days = [0,1,2,3,4,5,6]; });
     }catch(e){
       data = defaultData();
       await persist();
@@ -562,28 +613,52 @@
     if(val) data.checks[key] = true; else delete data.checks[key];
   }
 
+  function habitDays(h){
+    return (h && h.days && h.days.length) ? h.days : [0,1,2,3,4,5,6];
+  }
+
   function habitStreak(habitId){
+    const h = data.habits.find(x=>x.id===habitId);
+    const days = habitDays(h);
+    if(days.length===0) return 0;
+    const scheduled = d => days.includes(d.getDay());
     let streak = 0;
     let cur = new Date();
-    // if today not checked, start counting from yesterday
-    if(!isChecked(habitId, iso(cur))) cur.setDate(cur.getDate()-1);
-    while(isChecked(habitId, iso(cur))){
-      streak++;
+    let guard = 0;
+    // if today is a scheduled day but not yet checked, don't break the streak — start counting from yesterday
+    if(scheduled(cur) && !isChecked(habitId, iso(cur))){
       cur.setDate(cur.getDate()-1);
+    }
+    while(guard++ < 3650){
+      if(scheduled(cur)){
+        if(isChecked(habitId, iso(cur))){
+          streak++;
+          cur.setDate(cur.getDate()-1);
+        } else break;
+      } else {
+        cur.setDate(cur.getDate()-1); // rest day for this habit — doesn't break the streak
+      }
     }
     return streak;
   }
 
   function overallStreak(){
-    // days where ALL habits were checked, consecutive ending today or yesterday
+    // days where every SCHEDULED habit was checked, consecutive ending today or yesterday
     if(data.habits.length===0) return 0;
+    function scheduledHabitsFor(d){
+      const dow = d.getDay();
+      return data.habits.filter(h=>habitDays(h).includes(dow));
+    }
+    function allDone(d){
+      const hs = scheduledHabitsFor(d);
+      if(hs.length===0) return true; // nothing scheduled that day — doesn't break the streak
+      return hs.every(h=>isChecked(h.id, iso(d)));
+    }
     let streak=0;
     let cur = new Date();
-    function allDone(dISO){
-      return data.habits.every(h=>isChecked(h.id,dISO));
-    }
-    if(!allDone(iso(cur))) cur.setDate(cur.getDate()-1);
-    while(allDone(iso(cur))){
+    let guard = 0;
+    if(!allDone(cur)) cur.setDate(cur.getDate()-1);
+    while(guard++ < 3650 && allDone(cur)){
       streak++;
       cur.setDate(cur.getDate()-1);
     }
@@ -593,9 +668,12 @@
   function bestStreakThisMonth(){
     let best=0;
     data.habits.forEach(h=>{
+      const days = habitDays(h);
       let run=0, max=0;
       for(let d=1; d<=daysInMonth(viewYear,viewMonth); d++){
-        const dISO = viewYear+"-"+pad(viewMonth+1)+"-"+pad(d);
+        const dt = new Date(viewYear, viewMonth, d);
+        if(!days.includes(dt.getDay())) continue; // rest day for this habit — doesn't break the run
+        const dISO = iso(dt);
         if(isChecked(h.id,dISO)){ run++; max=Math.max(max,run); } else run=0;
       }
       best = Math.max(best,max);
@@ -608,6 +686,7 @@
     renderDateNav();
     renderHero();
     renderDateStrip();
+    renderPlanCard();
     renderHabitList();
     renderGrid();
     renderStats();
@@ -640,9 +719,15 @@
     const circumference = 238.76;
     document.getElementById('ringFg').style.strokeDashoffset = circumference - (circumference*pct/100);
     document.getElementById('ringNum').textContent = pct+"%";
-    const isToday = iso(new Date())===dISO;
+    const todayISO = iso(new Date());
+    const isToday = todayISO===dISO;
     document.getElementById('heroDate').textContent = selectedDate.toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
-    document.getElementById('heroHeadline').textContent = pct===100 && total>0 ? "Perfect day. Every habit checked." : (isToday ? "Let's build the day." : "Looking back at this day.");
+    let headline;
+    if(pct===100 && total>0) headline = "Perfect day. Every habit checked.";
+    else if(isToday) headline = "Let's build the day.";
+    else if(dISO < todayISO) headline = "Looking back at this day.";
+    else headline = "Looking ahead — plan for it.";
+    document.getElementById('heroHeadline').textContent = headline;
     document.getElementById('statStreak').textContent = overallStreak();
     document.getElementById('statDoneToday').textContent = done;
     document.getElementById('statTotalToday').textContent = total;
@@ -676,9 +761,51 @@
     if(sel) sel.scrollIntoView({inline:'center', block:'nearest'});
   }
 
+  // ---------- Daily plan & goal ----------
+  function renderPlanCard(){
+    const dISO = iso(selectedDate);
+    if(!data.notes) data.notes = {};
+    const note = data.notes[dISO] || {goal:"", plan:""};
+    const goalEl = document.getElementById('dailyGoalInput');
+    const planEl = document.getElementById('dailyPlanInput');
+    // don't clobber the field the user is actively typing in
+    if(document.activeElement!==goalEl) goalEl.value = note.goal||"";
+    if(document.activeElement!==planEl) planEl.value = note.plan||"";
+  }
+  function ensureNote(dISO){
+    if(!data.notes) data.notes = {};
+    if(!data.notes[dISO]) data.notes[dISO] = {goal:"", plan:""};
+    return data.notes[dISO];
+  }
+  document.getElementById('dailyGoalInput').oninput = (e)=>{
+    ensureNote(iso(selectedDate)).goal = e.target.value;
+    persist();
+  };
+  document.getElementById('dailyPlanInput').oninput = (e)=>{
+    ensureNote(iso(selectedDate)).plan = e.target.value;
+    persist();
+  };
+
+  // ---------- Reusable day-of-week toggle builder ----------
+  function buildDayToggles(container, selectedSet, onChange){
+    container.innerHTML = "";
+    DOW_LETTERS.forEach((letter, i)=>{
+      const el = document.createElement('div');
+      el.className = "day-toggle" + (selectedSet.has(i) ? " on" : "");
+      el.textContent = letter;
+      el.onclick = ()=>{
+        if(selectedSet.has(i)) selectedSet.delete(i); else selectedSet.add(i);
+        buildDayToggles(container, selectedSet, onChange);
+        if(onChange) onChange();
+      };
+      container.appendChild(el);
+    });
+  }
+
   function renderHabitList(){
     const list = document.getElementById('habitList');
     const dISO = iso(selectedDate);
+    const dow = selectedDate.getDay();
     document.getElementById('listDateLabel').textContent =
       (iso(new Date())===dISO ? "Today · " : "") + selectedDate.toLocaleDateString(undefined,{month:'short', day:'numeric'});
     list.innerHTML = "";
@@ -687,26 +814,32 @@
       return;
     }
     data.habits.forEach(h=>{
-      const checked = isChecked(h.id, dISO);
+      const days = habitDays(h);
+      const scheduled = days.includes(dow);
+      const checked = scheduled && isChecked(h.id, dISO);
       const streak = habitStreak(h.id);
       const row = document.createElement('div');
-      row.className = "habit-row" + (checked ? " checked" : "");
+      row.className = "habit-row" + (checked ? " checked" : "") + (!scheduled ? " rest" : "");
+      row.dataset.id = h.id;
       row.innerHTML = `
+        <div class="drag-handle" title="Drag to reorder">⠿</div>
         <div class="habit-check">${checked ? "✓" : ""}</div>
         <div class="habit-emoji">${h.emoji||"•"}</div>
         <div class="habit-body">
           <div class="habit-name">${escapeHtml(h.name)}</div>
-          <div class="habit-sub">${streak>0 ? "🔥 "+streak+" day streak" : "No streak yet"}</div>
+          <div class="habit-sub">${!scheduled ? "Rest day · " + daysLabel(days) : (streak>0 ? "🔥 "+streak+" day streak" : "No streak yet")}</div>
         </div>
         <button class="habit-edit" title="Edit">✎</button>
         <button class="habit-del" title="Delete">✕</button>
       `;
-      row.querySelector('.habit-check').onclick = async ()=>{
-        setChecked(h.id, dISO, !checked);
-        await persist();
-        render();
-      };
-      row.querySelector('.habit-body').onclick = row.querySelector('.habit-check').onclick;
+      if(scheduled){
+        row.querySelector('.habit-check').onclick = async ()=>{
+          setChecked(h.id, dISO, !checked);
+          await persist();
+          render();
+        };
+        row.querySelector('.habit-body').onclick = row.querySelector('.habit-check').onclick;
+      }
       row.querySelector('.habit-edit').onclick = (e)=>{
         e.stopPropagation();
         openEditHabit(h);
@@ -719,28 +852,89 @@
           render();
         }
       };
+      attachDragHandlers(row.querySelector('.drag-handle'), row);
       list.appendChild(row);
     });
+  }
+
+  // ---------- Drag to reorder habits ----------
+  let dragState = null;
+  function attachDragHandlers(handle, row){
+    handle.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      const list = row.parentElement;
+      dragState = { row, list };
+      row.classList.add('dragging');
+      try{ handle.setPointerCapture(e.pointerId); }catch(err){}
+      document.addEventListener('pointermove', onDragMove);
+      document.addEventListener('pointerup', onDragEnd, {once:true});
+    });
+  }
+  function onDragMove(e){
+    if(!dragState) return;
+    const { row, list } = dragState;
+    const y = e.clientY;
+    const siblings = Array.from(list.children).filter(x=>x!==row);
+    let inserted = false;
+    for(const sib of siblings){
+      const rect = sib.getBoundingClientRect();
+      if(y < rect.top + rect.height/2){
+        list.insertBefore(row, sib);
+        inserted = true;
+        break;
+      }
+    }
+    if(!inserted) list.appendChild(row);
+  }
+  async function onDragEnd(){
+    document.removeEventListener('pointermove', onDragMove);
+    if(dragState){
+      const { row, list } = dragState;
+      row.classList.remove('dragging');
+      const newOrder = Array.from(list.children).map(r=>r.dataset.id);
+      data.habits.sort((a,b)=> newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
+      dragState = null;
+      await persist();
+      render();
+    }
   }
 
   function renderGrid(){
     const table = document.getElementById('gridTable');
     document.getElementById('gridMonthLabel').textContent = MONTHS[viewMonth] + " " + viewYear;
     const n = daysInMonth(viewYear, viewMonth);
-    let thead = "<thead><tr><th class='habitcol'>Habit</th>";
+    const todayISO = iso(new Date());
+    let thead = "<thead><tr><th class='habitcol' rowspan='2'>Habit</th>";
     for(let d=1; d<=n; d++){
+      const dISO = viewYear+"-"+pad(viewMonth+1)+"-"+pad(d);
       const dow = new Date(viewYear, viewMonth, d).getDay();
-      thead += `<th class="${(dow===0||dow===6)?'weekend':''}">${d}</th>`;
+      const isTodayCol = dISO===todayISO;
+      thead += `<th class="${(dow===0||dow===6)?'weekend':''} ${isTodayCol?'today-col':''}">${d}</th>`;
+    }
+    thead += "</tr><tr class='dow-row'>";
+    for(let d=1; d<=n; d++){
+      const dISO = viewYear+"-"+pad(viewMonth+1)+"-"+pad(d);
+      const dow = new Date(viewYear, viewMonth, d).getDay();
+      const isTodayCol = dISO===todayISO;
+      thead += `<th class="${(dow===0||dow===6)?'weekend':''} ${isTodayCol?'today-col':''}">${DOW_LETTERS[dow]}</th>`;
     }
     thead += "</tr></thead>";
     let tbody = "<tbody>";
     data.habits.forEach(h=>{
+      const days = habitDays(h);
       tbody += `<tr><td class="habitcol">${h.emoji} ${escapeHtml(h.name)}</td>`;
       for(let d=1; d<=n; d++){
         const dISO = viewYear+"-"+pad(viewMonth+1)+"-"+pad(d);
         const dow = new Date(viewYear, viewMonth, d).getDay();
-        const on = isChecked(h.id, dISO);
-        tbody += `<td class="mark ${on?'on':''} ${(dow===0||dow===6)?'weekend':''}" data-h="${h.id}" data-d="${dISO}"><span>${on?'✓':''}</span></td>`;
+        const isTodayCol = dISO===todayISO;
+        const scheduled = days.includes(dow);
+        const classes = [(dow===0||dow===6)?'weekend':'', isTodayCol?'today-col':''].join(' ');
+        if(!scheduled){
+          tbody += `<td class="off ${classes}"><span>–</span></td>`;
+        }else{
+          const on = isChecked(h.id, dISO);
+          tbody += `<td class="mark ${on?'on':''} ${classes}" data-h="${h.id}" data-d="${dISO}"><span>${on?'✓':''}</span></td>`;
+        }
       }
       tbody += "</tr>";
     });
@@ -758,16 +952,21 @@
 
   function renderStats(){
     const n = daysInMonth(viewYear, viewMonth);
-    let totalPossible = data.habits.length * n;
+    let totalPossible = 0;
     let totalDone = 0;
     const perHabit = data.habits.map(h=>{
-      let done=0;
+      const days = habitDays(h);
+      let scheduledCount=0, done=0;
       for(let d=1; d<=n; d++){
-        const dISO = viewYear+"-"+pad(viewMonth+1)+"-"+pad(d);
-        if(isChecked(h.id,dISO)) done++;
+        const dt = new Date(viewYear, viewMonth, d);
+        if(days.includes(dt.getDay())){
+          scheduledCount++;
+          if(isChecked(h.id, iso(dt))) done++;
+        }
       }
       totalDone += done;
-      return {h, done, pct: n? Math.round(done/n*100):0};
+      totalPossible += scheduledCount;
+      return {h, done, pct: scheduledCount? Math.round(done/scheduledCount*100):0};
     }).sort((a,b)=>b.pct-a.pct);
 
     document.getElementById('statMonthPct').textContent = totalPossible? Math.round(totalDone/totalPossible*100)+"%" : "0%";
@@ -806,13 +1005,17 @@
   });
 
   // ---------- Add habit ----------
+  buildDayToggles(document.getElementById('newHabitDaysToggle'), newHabitDays);
   document.getElementById('addHabitBtn').onclick = async ()=>{
     const nameInput = document.getElementById('newHabitName');
     const emojiInput = document.getElementById('newHabitEmoji');
     const name = nameInput.value.trim();
     if(!name) return;
-    data.habits.push({id: uid(), name, emoji: emojiInput.value.trim() || "✨"});
+    const days = newHabitDays.size>0 ? Array.from(newHabitDays) : [0,1,2,3,4,5,6];
+    data.habits.push({id: uid(), name, emoji: emojiInput.value.trim() || "✨", days});
     nameInput.value = ""; emojiInput.value = "";
+    newHabitDays = new Set([0,1,2,3,4,5,6]);
+    buildDayToggles(document.getElementById('newHabitDaysToggle'), newHabitDays);
     await persist();
     render();
   };
@@ -826,6 +1029,8 @@
     editingHabitId = h.id;
     document.getElementById('editEmojiInput').value = h.emoji || "✨";
     document.getElementById('editNameInput').value = h.name || "";
+    editHabitDays = new Set(habitDays(h));
+    buildDayToggles(document.getElementById('editHabitDaysToggle'), editHabitDays);
     document.getElementById('editOverlay').classList.add('show');
   }
   function closeEditHabit(){
@@ -842,7 +1047,11 @@
     const emoji = document.getElementById('editEmojiInput').value.trim() || "✨";
     if(!name){ document.getElementById('editNameInput').focus(); return; }
     const h = data.habits.find(x=>x.id===editingHabitId);
-    if(h){ h.name = name; h.emoji = emoji; }
+    if(h){
+      h.name = name;
+      h.emoji = emoji;
+      h.days = editHabitDays.size>0 ? Array.from(editHabitDays) : [0,1,2,3,4,5,6];
+    }
     closeEditHabit();
     await persist();
     render();
@@ -882,21 +1091,8 @@
   };
 
   // ---------- Alarms ----------
-  const DAY_LETTERS = ["S","M","T","W","T","F","S"];
-
   function renderNewAlarmDayToggles(){
-    const wrap = document.getElementById('newAlarmDays');
-    wrap.innerHTML = "";
-    DAY_LETTERS.forEach((letter, i)=>{
-      const el = document.createElement('div');
-      el.className = "day-toggle" + (newAlarmDays.has(i) ? " on" : "");
-      el.textContent = letter;
-      el.onclick = ()=>{
-        if(newAlarmDays.has(i)) newAlarmDays.delete(i); else newAlarmDays.add(i);
-        renderNewAlarmDayToggles();
-      };
-      wrap.appendChild(el);
-    });
+    buildDayToggles(document.getElementById('newAlarmDays'), newAlarmDays);
   }
   renderNewAlarmDayToggles();
 
@@ -907,7 +1103,7 @@
     const sorted=[...days].sort();
     if(sorted.length===5 && weekdays.every(d=>days.includes(d))) return "Weekdays";
     if(sorted.length===2 && weekend.every(d=>days.includes(d))) return "Weekends";
-    return sorted.map(d=>DAY_LETTERS[d]).join(" ");
+    return sorted.map(d=>DOW_LETTERS[d]).join(" ");
   }
 
   function renderAlarms(){
@@ -1034,6 +1230,12 @@
   if("serviceWorker" in navigator){
     window.addEventListener("load", ()=>{
       navigator.serviceWorker.register("sw.js").catch(e=>console.warn("SW registration failed", e));
+    });
+    let refreshedOnce = false;
+    navigator.serviceWorker.addEventListener("controllerchange", ()=>{
+      if(refreshedOnce) return;
+      refreshedOnce = true;
+      window.location.reload();
     });
   }
 })();
