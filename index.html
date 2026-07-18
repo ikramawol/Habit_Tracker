@@ -36,7 +36,7 @@
     color:var(--text);
     font-family:'Inter',sans-serif;
     min-height:100vh;
-    padding-bottom:96px;
+    padding-bottom:calc(96px + env(safe-area-inset-bottom));
   }
   h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
   .mono{font-family:'JetBrains Mono',monospace;}
@@ -233,7 +233,7 @@
 
   /* ---------- Tabs ---------- */
   .tabbar{
-    position:fixed; bottom:0; left:0; right:0;
+    position:fixed; bottom:0; left:0; right:0; z-index:50;
     background:rgba(10,15,30,.92); backdrop-filter:blur(14px);
     border-top:1px solid var(--line);
     padding:10px 18px calc(10px + env(safe-area-inset-bottom));
@@ -249,7 +249,7 @@
   .tab-btn.active{color:var(--gold);}
 
   /* ---------- Grid view ---------- */
-  .grid-scroll{overflow-x:auto; overflow-y:auto; max-height:70vh; border:1px solid var(--line); border-radius:16px; background:var(--surface); margin-bottom:20px;}
+  .grid-scroll{overflow-x:auto; overflow-y:auto; max-height:min(70vh, calc(100dvh - 340px)); border:1px solid var(--line); border-radius:16px; background:var(--surface); margin-bottom:24px;}
   table.grid{border-collapse:collapse; width:max-content;}
   table.grid th, table.grid td{
     width:34px;height:34px;text-align:center;font-size:10px;color:var(--text-dim);
@@ -478,6 +478,23 @@
     <div id="rankingList"></div>
   </div>
 
+  <!-- GOALS VIEW -->
+  <div class="view" id="view-goals">
+    <div class="section-label"><span>Short-term goals</span></div>
+    <div class="habit-list" id="shortGoalList"></div>
+    <div class="add-row">
+      <input id="newShortGoalName" placeholder="Add a short-term goal…">
+      <button id="addShortGoalBtn">Add</button>
+    </div>
+
+    <div class="section-label"><span>Long-term goals</span></div>
+    <div class="habit-list" id="longGoalList"></div>
+    <div class="add-row">
+      <input id="newLongGoalName" placeholder="Add a long-term goal…">
+      <button id="addLongGoalBtn">Add</button>
+    </div>
+  </div>
+
   <!-- ALARMS VIEW -->
   <div class="view" id="view-alarms">
     <div class="section-label"><span>Built-in alarms</span></div>
@@ -528,6 +545,7 @@
     <button class="tab-btn active" data-view="today"><span class="ic">✅</span>Today</button>
     <button class="tab-btn" data-view="grid"><span class="ic">▦</span>Month grid</button>
     <button class="tab-btn" data-view="stats"><span class="ic">📊</span>Stats</button>
+    <button class="tab-btn" data-view="goals"><span class="ic">🎯</span>Goals</button>
     <button class="tab-btn" data-view="alarms"><span class="ic">⏰</span>Alarms</button>
   </div>
 </div>
@@ -557,7 +575,8 @@
     notes: {}, // "YYYY-MM-DD": {goal, plan}
     alarms: [
       {id: uid(), time:"05:00", label:"Wake up", days:[0,1,2,3,4,5,6], enabled:true}
-    ]
+    ],
+    goals: { short: [], long: [] }
   });
 
   function uid(){ return Math.random().toString(36).slice(2,9); }
@@ -588,6 +607,9 @@
       if(!data.checks) data.checks = {};
       if(!data.habits) data.habits = [];
       if(!data.notes) data.notes = {};
+      if(!data.goals) data.goals = { short: [], long: [] };
+      if(!data.goals.short) data.goals.short = [];
+      if(!data.goals.long) data.goals.long = [];
       data.habits.forEach(h=>{ if(!h.days || !h.days.length) h.days = [0,1,2,3,4,5,6]; });
     }catch(e){
       data = defaultData();
@@ -690,6 +712,7 @@
     renderHabitList();
     renderGrid();
     renderStats();
+    renderGoals();
     renderAlarms();
   }
 
@@ -989,6 +1012,67 @@
       rankEl.appendChild(row);
     });
   }
+
+  // ---------- Goals (short-term & long-term) ----------
+  function renderGoalList(containerId, arr, emoji, emptyMsg){
+    const list = document.getElementById(containerId);
+    list.innerHTML = "";
+    if(!arr || arr.length===0){
+      list.innerHTML = `<div class="empty-state">${emptyMsg}</div>`;
+      return;
+    }
+    arr.forEach(g=>{
+      const row = document.createElement('div');
+      row.className = "habit-row" + (g.done ? " checked" : "");
+      row.innerHTML = `
+        <div class="habit-check">${g.done ? "✓" : ""}</div>
+        <div class="habit-emoji">${emoji}</div>
+        <div class="habit-body">
+          <div class="habit-name">${escapeHtml(g.text)}</div>
+        </div>
+        <button class="habit-del" title="Delete">✕</button>
+      `;
+      const toggle = async ()=>{
+        g.done = !g.done;
+        await persist();
+        render();
+      };
+      row.querySelector('.habit-check').onclick = toggle;
+      row.querySelector('.habit-body').onclick = toggle;
+      row.querySelector('.habit-del').onclick = async (e)=>{
+        e.stopPropagation();
+        if(confirm(`Remove "${g.text}"?`)){
+          arr.splice(arr.indexOf(g),1);
+          await persist();
+          render();
+        }
+      };
+      list.appendChild(row);
+    });
+  }
+
+  function renderGoals(){
+    renderGoalList('shortGoalList', data.goals.short, "🎯", "No short-term goals yet. Add one below 👇");
+    renderGoalList('longGoalList', data.goals.long, "🏔️", "No long-term goals yet. Add one below 👇");
+  }
+
+  function addGoal(kind, inputId){
+    const input = document.getElementById(inputId);
+    const text = input.value.trim();
+    if(!text) return;
+    data.goals[kind].push({id: uid(), text, done:false});
+    input.value = "";
+    persist();
+    render();
+  }
+  document.getElementById('addShortGoalBtn').onclick = ()=>addGoal('short','newShortGoalName');
+  document.getElementById('addLongGoalBtn').onclick = ()=>addGoal('long','newLongGoalName');
+  document.getElementById('newShortGoalName').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('addShortGoalBtn').click();
+  });
+  document.getElementById('newLongGoalName').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('addLongGoalBtn').click();
+  });
 
   function escapeHtml(s){
     return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
