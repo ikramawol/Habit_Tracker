@@ -1,4 +1,4 @@
-const CACHE_NAME = "habit-tracker-v5";
+const CACHE_NAME = "habit-tracker-v6";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -28,5 +28,22 @@ self.addEventListener("fetch", (event) => {
         return response;
       })
       .catch(() => caches.match(event.request))
+  );
+});
+
+// Handle taps on the alarm notification's Dismiss / Snooze buttons, and on
+// the notification body itself (which just opens/focuses the app).
+self.addEventListener("notificationclick", (event) => {
+  const action = event.action; // "dismiss" | "snooze" | "" (body tap)
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      const msgType = action === "snooze" ? "alarm-snooze" : "alarm-dismiss";
+      if (clients.length > 0) {
+        clients.forEach((c) => c.postMessage({ type: msgType }));
+        return clients[0].focus();
+      }
+      return self.clients.openWindow("./");
+    })
   );
 });
