@@ -172,6 +172,29 @@
   }
   .plan-card input::placeholder, .plan-card textarea::placeholder{color:var(--text-faint);}
   .plan-card input:focus, .plan-card textarea:focus{outline:none;border-color:var(--gold);}
+  .plan-card .field-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);margin:12px 2px 6px;}
+  .plan-card .field-label:first-of-type{margin-top:0;}
+  .task-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;}
+  .task-row{display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:8px 10px;}
+  .task-row .t-check{
+    width:21px;height:21px;border-radius:7px;flex:none;border:1.5px solid var(--line);background:var(--bg);
+    display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:transparent;
+  }
+  .task-row .t-check.on{background:linear-gradient(155deg,var(--mint),#2aa87e);border-color:transparent;color:#0b1a14;}
+  .task-row .t-time{font-size:10.5px;color:var(--gold);font-family:'JetBrains Mono',monospace;flex:none;min-width:34px;}
+  .task-row .t-text{flex:1;font-size:13px;color:var(--text);min-width:0;}
+  .task-row .t-text.done{color:var(--text-dim);text-decoration:line-through;text-decoration-color:var(--text-faint);}
+  .task-row .t-del{background:none;border:none;color:var(--text-faint);font-size:13px;cursor:pointer;flex:none;opacity:.6;}
+  .add-task-row{display:flex;gap:6px;margin-bottom:4px;}
+  .add-task-row input[type="time"]{
+    flex:none;width:84px;background:var(--surface-2);border:1px solid var(--line);color:var(--text);font-size:12px;
+    border-radius:10px;padding:8px 6px;color-scheme:dark;
+  }
+  .add-task-row input[type="text"]{
+    flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--line);color:var(--text);font-size:13px;
+    border-radius:10px;padding:8px 10px;margin-bottom:0;
+  }
+  .add-task-row button{background:var(--surface-2);border:1px solid var(--line);color:var(--gold);font-size:12px;font-weight:700;border-radius:10px;padding:0 12px;cursor:pointer;flex:none;}
 
   /* ---------- Habit row: drag handle & rest day ---------- */
   .drag-handle{
@@ -262,6 +285,52 @@
   .edit-modal button:active{transform:scale(.96);}
   .edit-modal .cancel-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text);}
   .edit-modal .save-btn{background:linear-gradient(155deg,var(--gold),#a9812f);color:#241a05; box-shadow:var(--shadow-gold);}
+  .edit-modal.goal-modal{max-width:380px;max-height:86vh;overflow-y:auto;}
+  .field-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);margin:14px 0 6px;}
+  .field-label:first-of-type{margin-top:0;}
+  .edit-modal textarea{
+    width:100%;background:var(--surface-2);border:1px solid var(--line);color:var(--text-dim);font-size:13px;
+    border-radius:11px;padding:10px;font-family:'Inter',sans-serif;resize:vertical;min-height:52px;
+  }
+  .edit-modal select, .edit-modal input[type="date"]{
+    width:100%;background:var(--surface-2);border:1px solid var(--line);color:var(--text);font-size:13.5px;
+    border-radius:11px;padding:10px;font-family:'Inter',sans-serif;color-scheme:dark;
+  }
+  .priority-toggles{display:flex;gap:6px;}
+  .priority-toggles .p-opt{
+    flex:1;text-align:center;font-size:12px;font-weight:700;padding:8px 0;border-radius:10px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--line);color:var(--text-faint);
+  }
+  .priority-toggles .p-opt.on.low{background:#22331f;border-color:#3a5a34;color:var(--mint);}
+  .priority-toggles .p-opt.on.med{background:#332c1a;border-color:#6b5a2a;color:var(--gold);}
+  .priority-toggles .p-opt.on.high{background:#331e1a;border-color:#6b3a2a;color:var(--ember);}
+  .milestone-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;}
+  .milestone-row{display:flex;align-items:center;gap:8px;}
+  .milestone-row .m-check{
+    width:22px;height:22px;border-radius:7px;flex:none;border:1.5px solid var(--line);background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:transparent;
+  }
+  .milestone-row .m-check.on{background:linear-gradient(155deg,var(--mint),#2aa87e);border-color:transparent;color:#0b1a14;}
+  .milestone-row .m-text{flex:1;font-size:13px;background:transparent;border:none;color:var(--text);padding:4px 0;}
+  .milestone-row .m-text.done{color:var(--text-dim);text-decoration:line-through;text-decoration-color:var(--text-faint);}
+  .milestone-row .m-del{background:none;border:none;color:var(--text-faint);font-size:13px;cursor:pointer;flex:none;opacity:.6;}
+  .add-milestone-row{display:flex;gap:6px;}
+  .add-milestone-row input{flex:1;background:var(--surface-2);border:1px solid var(--line);color:var(--text);font-size:12.5px;border-radius:9px;padding:8px 10px;}
+  .add-milestone-row button{background:var(--surface-2);border:1px solid var(--line);color:var(--gold);font-size:12px;font-weight:700;border-radius:9px;padding:0 12px;cursor:pointer;}
+  .edit-modal .delete-goal-btn{background:transparent;border:1px solid #6b3a2a;color:var(--ember);flex:none;padding:12px 16px;}
+
+  /* ---------- Goal row meta (progress, priority, deadline) ---------- */
+  .goal-meta{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap;}
+  .goal-tag{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.02em;}
+  .goal-tag.low{background:#22331f;color:var(--mint);}
+  .goal-tag.med{background:#332c1a;color:var(--gold);}
+  .goal-tag.high{background:#331e1a;color:var(--ember);}
+  .goal-tag.deadline{background:var(--surface-2);color:var(--text-dim);}
+  .goal-tag.overdue{background:#331e1a;color:var(--ember);}
+  .goal-progress-wrap{width:100%;margin-top:6px;}
+  .goal-progress-bar{height:5px;border-radius:4px;background:var(--surface-2);overflow:hidden;}
+  .goal-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--mint));border-radius:4px;transition:width .25s var(--ease);}
+  .goal-progress-label{font-size:10px;color:var(--text-faint);margin-top:3px;}
 
   /* ---------- Add habit ---------- */
   .add-row{
@@ -425,6 +494,11 @@
     border-radius:11px;padding:8px 10px;font-family:'Inter',sans-serif;
   }
   .add-alarm-row input::placeholder{color:var(--text-faint);}
+  .add-alarm-row select{
+    flex:none;background:var(--surface-2);border:1px solid var(--line);color:var(--text);font-size:12.5px;
+    border-radius:11px;padding:8px 6px;font-family:'Inter',sans-serif;color-scheme:dark;order:2;width:100%;
+  }
+  .alarm-row .alarm-tone{font-size:10.5px;color:var(--text-faint);}
   .add-alarm-row button{
     background:linear-gradient(155deg,var(--gold),#a9812f); border:none; color:#241a05;
     font-weight:700; font-size:13px; border-radius:11px; padding:0 16px; cursor:pointer;flex:none;
@@ -518,7 +592,15 @@
     <div class="plan-card">
       <div class="section-label"><span>Daily plan &amp; goal</span></div>
       <input type="text" id="dailyGoalInput" placeholder="Today's #1 goal…">
-      <textarea id="dailyPlanInput" rows="3" placeholder="Plan for the day…"></textarea>
+      <div class="field-label">Today's tasks</div>
+      <div class="task-list" id="dailyTaskList"></div>
+      <div class="add-task-row">
+        <input type="time" id="newTaskTime">
+        <input type="text" id="newTaskText" placeholder="Add a task…">
+        <button id="addTaskBtn">Add</button>
+      </div>
+      <div class="field-label">Notes</div>
+      <textarea id="dailyPlanInput" rows="2" placeholder="Anything else on your mind…"></textarea>
     </div>
     <div class="section-label"><span id="listDateLabel">Today's habits</span></div>
     <div class="habit-list" id="habitList"></div>
@@ -572,9 +654,10 @@
       <input type="time" id="newAlarmTime" value="07:00">
       <input type="text" id="newAlarmLabel" placeholder="Alarm label…">
       <button id="addAlarmBtn">Add</button>
+      <select id="newAlarmTone"></select>
       <div class="day-toggles" id="newAlarmDays"></div>
     </div>
-    <div class="section-label"><span style="font-size:11px;">Alarms ring while this tab is open in your browser.</span></div>
+    <div class="section-label"><span style="font-size:11px;line-height:1.5;">Alarms ring &amp; notify while Habits is open or running in the background. No app — website or native — can wake itself up once the browser is fully closed or the phone is force-stopped; keep your phone's built-in alarm as backup for anything critical.</span></div>
   </div>
 
 </div>
@@ -592,6 +675,36 @@
     <div class="btn-row">
       <button class="cancel-btn" id="editCancelBtn">Cancel</button>
       <button class="save-btn" id="editSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL DETAIL OVERLAY -->
+<div class="edit-overlay" id="goalOverlay">
+  <div class="edit-modal goal-modal">
+    <h3 id="goalModalTitle">Goal</h3>
+    <div class="field-label">Goal</div>
+    <input type="text" class="edit-name" id="goalNameInput" placeholder="Goal name" maxlength="80" style="width:100%;">
+    <div class="field-label">Priority</div>
+    <div class="priority-toggles" id="goalPriorityToggles">
+      <div class="p-opt low" data-p="low">Low</div>
+      <div class="p-opt med" data-p="med">Medium</div>
+      <div class="p-opt high" data-p="high">High</div>
+    </div>
+    <div class="field-label">Target date (optional)</div>
+    <input type="date" id="goalDeadlineInput">
+    <div class="field-label">Milestones</div>
+    <div class="milestone-list" id="goalMilestoneList"></div>
+    <div class="add-milestone-row">
+      <input type="text" id="newMilestoneText" placeholder="Add a milestone…">
+      <button id="addMilestoneBtn">Add</button>
+    </div>
+    <div class="field-label">Notes</div>
+    <textarea id="goalNotesInput" rows="2" placeholder="Why this matters, how you'll get there…"></textarea>
+    <div class="btn-row" style="margin-top:18px;">
+      <button class="delete-goal-btn" id="goalDeleteBtn">Delete</button>
+      <button class="cancel-btn" id="goalCancelBtn">Cancel</button>
+      <button class="save-btn" id="goalSaveBtn">Save</button>
     </div>
   </div>
 </div>
@@ -641,12 +754,19 @@
       {id: uid(), name:"Plan Tomorrow", emoji:"📄", days:[0,1,2,3,4,5,6]}
     ],
     checks: {}, // "habitId|YYYY-MM-DD": true
-    notes: {}, // "YYYY-MM-DD": {goal, plan}
+    notes: {}, // "YYYY-MM-DD": {goal, plan, tasks:[{id,time,text,done}]}
     alarms: [
-      {id: uid(), time:"05:00", label:"Wake up", days:[0,1,2,3,4,5,6], enabled:true}
+      {id: uid(), time:"05:00", label:"Wake up", days:[0,1,2,3,4,5,6], enabled:true, tone:"classic"}
     ],
-    goals: { short: [], long: [] }
+    goals: { short: [], long: [] } // each goal: {id,text,done,priority,deadline,notes,milestones:[{id,text,done}]}
   });
+
+  const RINGTONES = {
+    classic:  {name:"Classic Beep",  freqs:[880,660], pattern:[0.34,0.08]},
+    chime:    {name:"Gentle Chime",  freqs:[523,659,784], pattern:[0.5,0.15]},
+    digital:  {name:"Digital",       freqs:[988,988,988,494], pattern:[0.12,0.06]},
+    siren:    {name:"Urgent Siren",  freqs:[440,880], pattern:[0.22,0.02]}
+  };
 
   function uid(){ return Math.random().toString(36).slice(2,9); }
   function pad(n){ return n<10 ? "0"+n : ""+n; }
@@ -680,6 +800,14 @@
       if(!data.goals.short) data.goals.short = [];
       if(!data.goals.long) data.goals.long = [];
       data.habits.forEach(h=>{ if(!h.days || !h.days.length) h.days = [0,1,2,3,4,5,6]; });
+      [...data.goals.short, ...data.goals.long].forEach(g=>{
+        if(!g.priority) g.priority = "";
+        if(!g.deadline) g.deadline = "";
+        if(!g.notes) g.notes = "";
+        if(!g.milestones) g.milestones = [];
+      });
+      data.alarms.forEach(a=>{ if(!a.tone || !RINGTONES[a.tone]) a.tone = "classic"; });
+      Object.values(data.notes).forEach(n=>{ if(!n.tasks) n.tasks = []; });
     }catch(e){
       data = defaultData();
       await persist();
@@ -861,16 +989,18 @@
   function renderPlanCard(){
     const dISO = iso(selectedDate);
     if(!data.notes) data.notes = {};
-    const note = data.notes[dISO] || {goal:"", plan:""};
+    const note = data.notes[dISO] || {goal:"", plan:"", tasks:[]};
     const goalEl = document.getElementById('dailyGoalInput');
     const planEl = document.getElementById('dailyPlanInput');
     // don't clobber the field the user is actively typing in
     if(document.activeElement!==goalEl) goalEl.value = note.goal||"";
     if(document.activeElement!==planEl) planEl.value = note.plan||"";
+    renderDailyTasks(note);
   }
   function ensureNote(dISO){
     if(!data.notes) data.notes = {};
-    if(!data.notes[dISO]) data.notes[dISO] = {goal:"", plan:""};
+    if(!data.notes[dISO]) data.notes[dISO] = {goal:"", plan:"", tasks:[]};
+    if(!data.notes[dISO].tasks) data.notes[dISO].tasks = [];
     return data.notes[dISO];
   }
   document.getElementById('dailyGoalInput').oninput = (e)=>{
@@ -881,6 +1011,54 @@
     ensureNote(iso(selectedDate)).plan = e.target.value;
     persist();
   };
+
+  function renderDailyTasks(note){
+    const list = document.getElementById('dailyTaskList');
+    const tasks = (note.tasks||[]).slice().sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
+    list.innerHTML = "";
+    if(tasks.length===0){
+      list.innerHTML = `<div class="empty-state" style="padding:16px;">No tasks yet — add one below 👇</div>`;
+      return;
+    }
+    tasks.forEach(t=>{
+      const row = document.createElement('div');
+      row.className = "task-row";
+      row.innerHTML = `
+        <div class="t-check ${t.done?'on':''}">${t.done?'✓':''}</div>
+        ${t.time ? `<div class="t-time">${t.time}</div>` : ""}
+        <div class="t-text ${t.done?'done':''}">${escapeHtml(t.text)}</div>
+        <button class="t-del" title="Delete">✕</button>
+      `;
+      const toggle = async ()=>{
+        t.done = !t.done;
+        await persist();
+        renderPlanCard();
+      };
+      row.querySelector('.t-check').onclick = toggle;
+      row.querySelector('.t-text').onclick = toggle;
+      row.querySelector('.t-del').onclick = async ()=>{
+        const n = ensureNote(iso(selectedDate));
+        n.tasks = n.tasks.filter(x=>x.id!==t.id);
+        await persist();
+        renderPlanCard();
+      };
+      list.appendChild(row);
+    });
+  }
+  document.getElementById('addTaskBtn').onclick = async ()=>{
+    const textEl = document.getElementById('newTaskText');
+    const timeEl = document.getElementById('newTaskTime');
+    const text = textEl.value.trim();
+    if(!text) return;
+    const n = ensureNote(iso(selectedDate));
+    n.tasks.push({id: uid(), time: timeEl.value||"", text, done:false});
+    textEl.value = ""; timeEl.value = "";
+    await persist();
+    renderPlanCard();
+  };
+  document.getElementById('newTaskText').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('addTaskBtn').click();
+  });
 
   // ---------- Reusable day-of-week toggle builder ----------
   function buildDayToggles(container, selectedSet, onChange){
@@ -1087,6 +1265,22 @@
   }
 
   // ---------- Goals (short-term & long-term) ----------
+  function goalProgress(g){
+    if(!g.milestones || g.milestones.length===0) return g.done ? 100 : 0;
+    const done = g.milestones.filter(m=>m.done).length;
+    return Math.round((done/g.milestones.length)*100);
+  }
+  function deadlineTag(g){
+    if(!g.deadline) return "";
+    const today = new Date(); today.setHours(0,0,0,0);
+    const dl = new Date(g.deadline+"T00:00:00");
+    const diffDays = Math.round((dl-today)/86400000);
+    if(g.done) return `<span class="goal-tag deadline">${g.deadline}</span>`;
+    if(diffDays<0) return `<span class="goal-tag overdue">Overdue</span>`;
+    if(diffDays===0) return `<span class="goal-tag high">Due today</span>`;
+    if(diffDays<=7) return `<span class="goal-tag med">${diffDays}d left</span>`;
+    return `<span class="goal-tag deadline">${g.deadline}</span>`;
+  }
   function renderGoalList(containerId, arr, emoji, emptyMsg){
     const list = document.getElementById(containerId);
     list.innerHTML = "";
@@ -1094,7 +1288,11 @@
       list.innerHTML = `<div class="empty-state">${emptyMsg}</div>`;
       return;
     }
-    arr.forEach(g=>{
+    // active goals first, completed goals sink to the bottom
+    const sorted = arr.slice().sort((a,b)=>(a.done===b.done)?0:(a.done?1:-1));
+    sorted.forEach(g=>{
+      const pct = goalProgress(g);
+      const hasMilestones = g.milestones && g.milestones.length>0;
       const row = document.createElement('div');
       row.className = "habit-row" + (g.done ? " checked" : "");
       row.innerHTML = `
@@ -1102,16 +1300,23 @@
         <div class="habit-emoji">${emoji}</div>
         <div class="habit-body">
           <div class="habit-name">${escapeHtml(g.text)}</div>
+          <div class="goal-meta">
+            ${g.priority ? `<span class="goal-tag ${g.priority}">${g.priority==='low'?'Low':g.priority==='med'?'Medium':'High'}</span>` : ""}
+            ${deadlineTag(g)}
+            ${hasMilestones ? `<span class="goal-tag deadline">${g.milestones.filter(m=>m.done).length}/${g.milestones.length} milestones</span>` : ""}
+          </div>
+          ${hasMilestones ? `<div class="goal-progress-wrap"><div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%"></div></div></div>` : ""}
         </div>
         <button class="habit-del" title="Delete">✕</button>
       `;
-      const toggle = async ()=>{
+      const toggleDone = async (e)=>{
+        e.stopPropagation();
         g.done = !g.done;
         await persist();
         render();
       };
-      row.querySelector('.habit-check').onclick = toggle;
-      row.querySelector('.habit-body').onclick = toggle;
+      row.querySelector('.habit-check').onclick = toggleDone;
+      row.querySelector('.habit-body').onclick = ()=>openGoalDetail(g, arr);
       row.querySelector('.habit-del').onclick = async (e)=>{
         e.stopPropagation();
         if(confirm(`Remove "${g.text}"?`)){
@@ -1133,7 +1338,7 @@
     const input = document.getElementById(inputId);
     const text = input.value.trim();
     if(!text) return;
-    data.goals[kind].push({id: uid(), text, done:false});
+    data.goals[kind].push({id: uid(), text, done:false, priority:"", deadline:"", notes:"", milestones:[]});
     input.value = "";
     persist();
     render();
@@ -1146,6 +1351,109 @@
   document.getElementById('newLongGoalName').addEventListener('keydown', e=>{
     if(e.key==='Enter') document.getElementById('addLongGoalBtn').click();
   });
+
+  // ---------- Goal detail modal ----------
+  let editingGoal = null;
+  let editingGoalArr = null;
+  let goalMilestonesDraft = [];
+
+  function openGoalDetail(g, arr){
+    editingGoal = g;
+    editingGoalArr = arr;
+    goalMilestonesDraft = (g.milestones||[]).map(m=>({...m}));
+    document.getElementById('goalModalTitle').textContent = "Edit goal";
+    document.getElementById('goalNameInput').value = g.text;
+    document.getElementById('goalDeadlineInput').value = g.deadline||"";
+    document.getElementById('goalNotesInput').value = g.notes||"";
+    setGoalPriority(g.priority||"");
+    renderMilestoneDraft();
+    document.getElementById('goalOverlay').classList.add('show');
+  }
+  function closeGoalDetail(){
+    editingGoal = null;
+    editingGoalArr = null;
+    document.getElementById('goalOverlay').classList.remove('show');
+  }
+  document.getElementById('goalOverlay').onclick = (e)=>{
+    if(e.target.id==='goalOverlay') closeGoalDetail();
+  };
+  document.getElementById('goalCancelBtn').onclick = closeGoalDetail;
+
+  function setGoalPriority(p){
+    document.querySelectorAll('#goalPriorityToggles .p-opt').forEach(el=>{
+      el.classList.toggle('on', el.dataset.p===p);
+    });
+  }
+  document.querySelectorAll('#goalPriorityToggles .p-opt').forEach(el=>{
+    el.onclick = ()=>{
+      const cur = document.querySelector('#goalPriorityToggles .p-opt.on');
+      const isSame = cur && cur.dataset.p===el.dataset.p;
+      setGoalPriority(isSame ? "" : el.dataset.p);
+    };
+  });
+
+  function renderMilestoneDraft(){
+    const list = document.getElementById('goalMilestoneList');
+    list.innerHTML = "";
+    if(goalMilestonesDraft.length===0){
+      list.innerHTML = `<div class="empty-state" style="padding:14px;">No milestones yet</div>`;
+      return;
+    }
+    goalMilestonesDraft.forEach(m=>{
+      const row = document.createElement('div');
+      row.className = "milestone-row";
+      row.innerHTML = `
+        <div class="m-check ${m.done?'on':''}">${m.done?'✓':''}</div>
+        <div class="m-text ${m.done?'done':''}">${escapeHtml(m.text)}</div>
+        <button class="m-del" title="Delete">✕</button>
+      `;
+      row.querySelector('.m-check').onclick = ()=>{ m.done = !m.done; renderMilestoneDraft(); };
+      row.querySelector('.m-del').onclick = ()=>{
+        goalMilestonesDraft = goalMilestonesDraft.filter(x=>x.id!==m.id);
+        renderMilestoneDraft();
+      };
+      list.appendChild(row);
+    });
+  }
+  document.getElementById('addMilestoneBtn').onclick = ()=>{
+    const input = document.getElementById('newMilestoneText');
+    const text = input.value.trim();
+    if(!text) return;
+    goalMilestonesDraft.push({id: uid(), text, done:false});
+    input.value = "";
+    renderMilestoneDraft();
+  };
+  document.getElementById('newMilestoneText').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('addMilestoneBtn').click();
+  });
+
+  document.getElementById('goalSaveBtn').onclick = async ()=>{
+    if(!editingGoal) return;
+    const text = document.getElementById('goalNameInput').value.trim();
+    if(!text){ document.getElementById('goalNameInput').focus(); return; }
+    const priEl = document.querySelector('#goalPriorityToggles .p-opt.on');
+    editingGoal.text = text;
+    editingGoal.priority = priEl ? priEl.dataset.p : "";
+    editingGoal.deadline = document.getElementById('goalDeadlineInput').value || "";
+    editingGoal.notes = document.getElementById('goalNotesInput').value;
+    editingGoal.milestones = goalMilestonesDraft;
+    // auto-complete the goal once every milestone is checked off
+    if(editingGoal.milestones.length>0){
+      editingGoal.done = editingGoal.milestones.every(m=>m.done);
+    }
+    closeGoalDetail();
+    await persist();
+    render();
+  };
+  document.getElementById('goalDeleteBtn').onclick = async ()=>{
+    if(!editingGoal || !editingGoalArr) return;
+    if(confirm(`Delete "${editingGoal.text}"?`)){
+      editingGoalArr.splice(editingGoalArr.indexOf(editingGoal),1);
+      closeGoalDetail();
+      await persist();
+      render();
+    }
+  };
 
   function escapeHtml(s){
     return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1253,6 +1561,12 @@
   }
   renderNewAlarmDayToggles();
 
+  function populateToneSelect(){
+    const sel = document.getElementById('newAlarmTone');
+    sel.innerHTML = Object.entries(RINGTONES).map(([key,t])=>`<option value="${key}">${t.name}</option>`).join("");
+  }
+  populateToneSelect();
+
   function daysLabel(days){
     if(days.length===7) return "Every day";
     if(days.length===0) return "No days set";
@@ -1273,11 +1587,12 @@
     data.alarms.forEach(a=>{
       const row = document.createElement('div');
       row.className = "alarm-row" + (a.enabled ? "" : " off");
+      const toneName = (RINGTONES[a.tone||"classic"]||RINGTONES.classic).name;
       row.innerHTML = `
         <div class="alarm-time">${a.time}</div>
         <div class="alarm-body">
           <div class="alarm-label">${escapeHtml(a.label || "Alarm")}</div>
-          <div class="alarm-days">${daysLabel(a.days||[])}</div>
+          <div class="alarm-days">${daysLabel(a.days||[])} · <span class="alarm-tone">${toneName}</span></div>
         </div>
         <div class="switch ${a.enabled?'on':''}"><div class="knob"></div></div>
         <button class="alarm-del" title="Delete">✕</button>
@@ -1301,6 +1616,7 @@
   document.getElementById('addAlarmBtn').onclick = async ()=>{
     const timeInput = document.getElementById('newAlarmTime');
     const labelInput = document.getElementById('newAlarmLabel');
+    const toneInput = document.getElementById('newAlarmTone');
     if(!timeInput.value) return;
     if(!data.alarms) data.alarms = [];
     data.alarms.push({
@@ -1308,34 +1624,80 @@
       time: timeInput.value,
       label: labelInput.value.trim() || "Alarm",
       days: Array.from(newAlarmDays),
-      enabled: true
+      enabled: true,
+      tone: toneInput.value || "classic"
     });
     labelInput.value = "";
     await persist();
     render();
+    requestAlarmPermissions();
+  };
+
+  function requestAlarmPermissions(){
     if(window.Notification && Notification.permission==="default"){
       Notification.requestPermission();
     }
-  };
+  }
 
   // ---------- Alarm engine: checks the clock and rings ----------
-  function beep(){
+  let ringLoopId = null;
+
+  function playTone(toneKey){
     try{
       if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state==="suspended") audioCtx.resume();
+      const tone = RINGTONES[toneKey] || RINGTONES.classic;
       const now = audioCtx.currentTime;
-      for(let i=0;i<6;i++){
+      const [on,off] = tone.pattern;
+      let t = now;
+      tone.freqs.forEach((freq,i)=>{
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = "sine";
-        osc.frequency.value = i%2===0 ? 880 : 660;
-        const t0 = now + i*0.42;
-        gain.gain.setValueAtTime(0, t0);
-        gain.gain.linearRampToValueAtTime(0.28, t0+0.02);
-        gain.gain.linearRampToValueAtTime(0, t0+0.34);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.3, t+0.02);
+        gain.gain.linearRampToValueAtTime(0, t+on);
         osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(t0); osc.stop(t0+0.36);
+        osc.start(t); osc.stop(t+on+0.02);
+        t += on+off;
+      });
+    }catch(e){ console.error("playTone failed", e); }
+  }
+
+  function startRingLoop(toneKey){
+    stopRingLoop();
+    playTone(toneKey);
+    if(navigator.vibrate) navigator.vibrate([500,250,500,250,500]);
+    ringLoopId = setInterval(()=>{
+      playTone(toneKey);
+      if(navigator.vibrate) navigator.vibrate([500,250,500,250,500]);
+    }, 2200);
+  }
+  function stopRingLoop(){
+    if(ringLoopId){ clearInterval(ringLoopId); ringLoopId = null; }
+    if(navigator.vibrate) navigator.vibrate(0);
+  }
+
+  async function notifyAlarm(alarm){
+    if(!window.Notification || Notification.permission!=="granted") return;
+    try{
+      if("serviceWorker" in navigator){
+        const reg = await navigator.serviceWorker.ready;
+        reg.showNotification(alarm.label||"Alarm", {
+          body: "Time: "+alarm.time,
+          tag: "habit-alarm-"+alarm.id,
+          requireInteraction: true,
+          vibrate: [500,250,500,250,500],
+          actions: [
+            {action:"dismiss", title:"Dismiss"},
+            {action:"snooze", title:"Snooze 5m"}
+          ]
+        });
+      } else {
+        new Notification(alarm.label||"Alarm", {body:"Time: "+alarm.time, tag:"habit-alarm"});
       }
-    }catch(e){ console.error("beep failed", e); }
+    }catch(e){ console.warn("notification failed", e); }
   }
 
   function triggerAlarm(alarm){
@@ -1343,19 +1705,19 @@
     document.getElementById('ringingTime').textContent = alarm.time;
     document.getElementById('ringingLabel').textContent = alarm.label || "Alarm";
     document.getElementById('alarmOverlay').classList.add('show');
-    beep();
-    if(window.Notification && Notification.permission==="granted"){
-      try{ new Notification(alarm.label||"Alarm", {body:"Time: "+alarm.time, tag:"habit-alarm"}); }catch(e){}
-    }
+    startRingLoop(alarm.tone||"classic");
+    notifyAlarm(alarm);
   }
 
   document.getElementById('dismissBtn').onclick = ()=>{
     document.getElementById('alarmOverlay').classList.remove('show');
+    stopRingLoop();
     ringingAlarm = null;
   };
   document.getElementById('snoozeBtn').onclick = ()=>{
     const a = ringingAlarm;
     document.getElementById('alarmOverlay').classList.remove('show');
+    stopRingLoop();
     ringingAlarm = null;
     if(a){
       clearTimeout(snoozeTimers[a.id]);
@@ -1363,13 +1725,33 @@
     }
   };
 
+  // react to Dismiss / Snooze tapped on a system notification while the app was backgrounded
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.addEventListener("message", (event)=>{
+      const msg = event.data || {};
+      if(msg.type==="alarm-dismiss"){
+        document.getElementById('alarmOverlay').classList.remove('show');
+        stopRingLoop();
+        ringingAlarm = null;
+      } else if(msg.type==="alarm-snooze"){
+        const a = ringingAlarm;
+        document.getElementById('alarmOverlay').classList.remove('show');
+        stopRingLoop();
+        ringingAlarm = null;
+        if(a){
+          clearTimeout(snoozeTimers[a.id]);
+          snoozeTimers[a.id] = setTimeout(()=>{ triggerAlarm(a); }, 5*60*1000);
+        }
+      }
+    });
+  }
+
   function checkAlarms(){
     if(!data || !data.alarms || document.getElementById('alarmOverlay').classList.contains('show')) return;
     const now = new Date();
     const hh = pad(now.getHours()), mm = pad(now.getMinutes());
     const nowHM = hh+":"+mm;
     const dow = now.getDay();
-    const fireKey = nowHM; // only one alarm can ring at once; re-check every tick
     data.alarms.forEach(a=>{
       if(!a.enabled) return;
       if(a.time!==nowHM) return;
@@ -1381,6 +1763,21 @@
     });
   }
   setInterval(checkAlarms, 5000);
+
+  // keep the screen awake while the app is open and visible, so a scheduled
+  // alarm isn't missed because the device fell asleep mid-check
+  let wakeLock = null;
+  async function acquireWakeLock(){
+    try{
+      if("wakeLock" in navigator && document.visibilityState==="visible"){
+        wakeLock = await navigator.wakeLock.request("screen");
+      }
+    }catch(e){ /* not supported / denied — silently ignore */ }
+  }
+  acquireWakeLock();
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.visibilityState==="visible") acquireWakeLock();
+  });
 
   loadData();
 
