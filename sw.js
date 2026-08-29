@@ -1,4 +1,4 @@
-const CACHE_NAME = "habit-tracker-v6";
+const CACHE_NAME = "habit-tracker-v7";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -17,8 +17,6 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Network-first: always try to fetch the latest version.
-// Only fall back to the cached copy if the network request fails (i.e. offline).
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request, { cache: "no-store" })
@@ -31,10 +29,8 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// Handle taps on the alarm notification's Dismiss / Snooze buttons, and on
-// the notification body itself (which just opens/focuses the app).
 self.addEventListener("notificationclick", (event) => {
-  const action = event.action; // "dismiss" | "snooze" | "" (body tap)
+  const action = event.action;
   event.notification.close();
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
