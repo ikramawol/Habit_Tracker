@@ -988,7 +988,13 @@
   function scrollSelectedIntoView(){
     const strip = document.getElementById('dateStrip');
     const sel = strip.querySelector('.date-chip.selected');
-    if(sel) sel.scrollIntoView({inline:'center', block:'nearest'});
+    if(!sel) return;
+    // Scroll only the date strip itself horizontally — never use
+    // scrollIntoView here, since it walks every scrollable ancestor
+    // (including the whole page) and yanks the page back to the top
+    // whenever this runs, e.g. after simply checking off a habit.
+    const target = sel.offsetLeft - (strip.clientWidth - sel.clientWidth) / 2;
+    strip.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
   }
 
   // ---------- Daily plan & goal ----------
