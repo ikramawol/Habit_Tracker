@@ -236,9 +236,9 @@
   .habit-check:active{transform:scale(.88);}
   .habit-emoji{font-size:19px;flex:none;width:24px;text-align:center;}
   .habit-body{flex:1;min-width:0;}
-  .habit-name{font-size:14.5px;font-weight:600;}
+  .habit-name{font-size:14.5px;font-weight:600; overflow-wrap:anywhere; word-break:break-word;}
   .habit-row.checked .habit-name{color:var(--text-dim); text-decoration:line-through; text-decoration-color:var(--text-faint);}
-  .habit-sub{font-size:11.5px;color:var(--text-faint);margin-top:1px;}
+  .habit-sub{font-size:11.5px;color:var(--text-faint);margin-top:1px; overflow-wrap:anywhere; word-break:break-word;}
   .habit-del{
     width:26px;height:26px;border-radius:8px;background:transparent;border:none;color:var(--text-faint);
     font-size:15px;cursor:pointer;flex:none;opacity:.6;
@@ -606,7 +606,7 @@
     <div class="habit-list" id="habitList"></div>
     <div class="add-row">
       <input id="newHabitEmoji" maxlength="2" placeholder="✨" style="max-width:38px;text-align:center;padding-left:4px;">
-      <input id="newHabitName" placeholder="Add a new habit…">
+      <input id="newHabitName" placeholder="Add a new habit…" maxlength="60">
       <button id="addHabitBtn">Add</button>
       <div class="day-toggles" id="newHabitDaysToggle"></div>
     </div>
@@ -1098,7 +1098,14 @@
       list.innerHTML = `<div class="empty-state">No habits yet. Add your first one below 👇</div>`;
       return;
     }
-    data.habits.forEach(h=>{
+    // Habits that didn't exist yet on the selected day shouldn't appear
+    // at all — not even as a greyed-out "rest day" row.
+    const visibleHabits = data.habits.filter(h => !h.createdAt || h.createdAt <= dISO);
+    if(visibleHabits.length===0){
+      list.innerHTML = `<div class="empty-state">No habits existed yet on this day.</div>`;
+      return;
+    }
+    visibleHabits.forEach(h=>{
       const days = habitDays(h);
       const scheduled = isScheduledOn(h, selectedDate);
       const checked = scheduled && isChecked(h.id, dISO);
